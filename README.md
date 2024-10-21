@@ -44,8 +44,9 @@ StealthGhost is an open-source, full-featured pentesting tool designed to provid
 - **Libraries**: 
   - Web Testing: Requests, BeautifulSoup
   - Wi-Fi Cracking: Scapy, etc.
+  
+---
  
 ## StealthGhost is anticipated to be fully developed by March 2025.
 
 
----
