@@ -14,7 +14,6 @@
 ## Introduction
 StealthGhost is an open-source, full-featured pentesting tool designed to provide security professionals and enthusiasts with a comprehensive suite for penetration testing. With capabilities ranging from Wi-Fi password cracking to web application testing and exploit development, StealthGhost aims to simplify the pentesting workflow through a user-friendly GUI. This tool is specifically designed for beginners and aims to expand with more tools and features, with an anticipated completion date of March 2025.
 
-StealthGhost is anticipated to be fully developed by March 2025.
 
 ## Features
 ### General Features
@@ -45,5 +44,8 @@ StealthGhost is anticipated to be fully developed by March 2025.
 - **Libraries**: 
   - Web Testing: Requests, BeautifulSoup
   - Wi-Fi Cracking: Scapy, etc.
+ 
+## StealthGhost is anticipated to be fully developed by March 2025.
+
 
 ---
