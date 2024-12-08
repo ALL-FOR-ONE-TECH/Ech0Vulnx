@@ -70,7 +70,7 @@ banner = f"""
 
 
                                     {Fore.GREEN} 1.0{Fore.GREEN}
-                                    {Fore.RED} BY  H4CK3R {Fore.RED}
+                                    {Fore.RED}A BY  H4CK3R {Fore.RED}
 """
 
 print(Fore.MAGENTA + banner)
@@ -137,7 +137,7 @@ vuln_group.add_argument('-b', '--brokenlinks',
                     metavar='domains.txt')
 
 crawlers_group.add_argument('-pspider', '--paramspider',
-                    type=str, help='extract parameters from a domains',
+                    type=str, help='extract parameters from a domain',
                     metavar='domain.com')
 
 crawlers_group.add_argument('-w', '--waybackurls',
@@ -317,7 +317,7 @@ vuln_group.add_argument('-heapds', '--heapdump_scan',
                      metavar='domain.com')
 
 
-parser.add_argument('--S3-scan', help='Scan for exposed S3 buckets')
+parser.add_argument('--s3-scan', help='Scan for exposed S3 buckets')
 
 parser.add_argument("-v", "--verbose", action="store_true", help="Increase output verbosity")
 
@@ -353,13 +353,13 @@ header = {"User-Agent": user_agent}
 
 async def update_script():
     try:
-        # --> Store current version
-        current_version = "1.0.0"  # --> Replace with your version tracking system
+        # Store current version
+        current_version = "1.0.0"  # Replace with your version tracking system
         backup_dir = "backups"
         
         print(f"{Fore.CYAN}Checking for updates...{Style.RESET_ALL}")
         
-        # --> Create backups directory if it doesn't exist
+        # Create backups directory if it doesn't exist
         if not os.path.exists(backup_dir):
             os.makedirs(backup_dir)
         
@@ -377,30 +377,30 @@ async def update_script():
             print(f"{Fore.RED}Backup failed: {str(e)}{Style.RESET_ALL}")
             return False
 
-        # --> Check remote repository for updates
+        # Check remote repository for updates
         print(f"{Fore.CYAN}Checking remote repository...{Style.RESET_ALL}")
         try:
-            # --> Fetch without merging
+            # Fetch without merging
             subprocess.run(["git", "fetch"], check=True, capture_output=True)
             
-            # --> Get current and remote commit hashes
+            # Get current and remote commit hashes
             current = subprocess.run(["git", "rev-parse", "HEAD"], 
                                    check=True, capture_output=True, text=True).stdout.strip()
             remote = subprocess.run(["git", "rev-parse", "@{u}"], 
                                   check=True, capture_output=True, text=True).stdout.strip()
             
             if current == remote:
-                print(f"{Fore.GREEN}Stealthghost is already up to date!{Style.RESET_ALL}")
+                print(f"{Fore.GREEN}StealthGhost is already up to date!{Style.RESET_ALL}")
                 return True
                 
         except subprocess.CalledProcessError as e:
             print(f"{Fore.RED}Failed to check for updates: {str(e)}{Style.RESET_ALL}")
             return False
 
-        # --> Perform update
-        print(f"{Fore.CYAN}Updating StealGhost...{Style.RESET_ALL}")
+        # Perform update
+        print(f"{Fore.CYAN}Updating StealthGhost...{Style.RESET_ALL}")
         try:
-            # --> Pull changes
+            # Pull changes
             result = subprocess.run(["git", "pull"], check=True, capture_output=True, text=True)
             
             if "Already up to date" in result.stdout:
@@ -408,7 +408,7 @@ async def update_script():
             else:
                 print(f"{Fore.GREEN}Update successful!{Style.RESET_ALL}")
                 
-                # --> Check for dependency updates
+                # Check for dependency updates
                 requirements_path = "requirements.txt"
                 if os.path.exists(requirements_path):
                     print(f"{Fore.CYAN}Updating dependencies...{Style.RESET_ALL}")
@@ -417,7 +417,7 @@ async def update_script():
                     print(f"{Fore.GREEN}Dependencies updated!{Style.RESET_ALL}")
                 
                 print(f"\n{Fore.GREEN}StealthGhost has been updated successfully!{Style.RESET_ALL}")
-                print(f"{Fore.YELLOW}Please restart SpyHunt to apply the updates.{Style.RESET_ALL}")
+                print(f"{Fore.YELLOW}Please restart StealthGhost to apply the updates.{Style.RESET_ALL}")
             
             return True
 
@@ -425,7 +425,7 @@ async def update_script():
             print(f"{Fore.RED}Update failed: {str(e)}{Style.RESET_ALL}")
             print(f"{Fore.YELLOW}Restoring from backup...{Style.RESET_ALL}")
             
-            # --> Restore from backup
+            # Restore from backup
             try:
                 shutil.rmtree(".", ignore_errors=True)
                 shutil.copytree(backup_path, ".", dirs_exist_ok=True)
@@ -440,7 +440,7 @@ async def update_script():
         print(f"{Fore.RED}An unexpected error occurred: {str(e)}{Style.RESET_ALL}")
         return False
 
-# -->  In your argument handler:
+# In your argument handler:
 if args.update:
     if asyncio.run(update_script()):
         sys.exit(0)
@@ -479,7 +479,7 @@ if args.s:
         with open(f"{args.save}", "a") as certsh:
             certsh.writelines(certshout)
 
-        # --> shodan subdomain extraction
+        # Shodan subdomain extraction
         if args.shodan_api:
             api = shodan.Shodan(args.shodan_api)
             try:
@@ -502,7 +502,7 @@ if args.s:
         commands(f"{spotter_path} {args.s} | uniq | sort")
         commands(f"{certsh_path} {args.s} | uniq | sort")
 
-        # --> shodan subdomain extraction
+        # Shodan subdomain extraction
         if args.shodan_api:
             api = shodan.Shodan(args.shodan_api)
             try:
@@ -543,7 +543,7 @@ if args.webcrawler:
     else:
         commands(f"echo {args.webcrawler} | hakrawler")
 
-# --> display's the status code
+
 if args.statuscode:
     commands(f"echo '{args.statuscode}' | httpx -silent -status-code")
 
@@ -552,7 +552,6 @@ if args.favicon:
         favicon = codecs.encode(response.content,"base64")
         hash = mmh3.hash(favicon)
         print(hash)
-
 
 if args.enumeratedomain:
     try:
@@ -692,16 +691,16 @@ if args.hostheaderinjection:
             "X-Host": "evil.com"
         }
 
-        # --> Get proxy list
+        # Get proxy list
         proxies = setup_proxies(args.proxy, args.proxy_file)
         current_proxy = None
 
         try:
-            # --> Select proxy if available
+            # Select proxy if available
             if proxies:
                 current_proxy = random.choice(proxies)
 
-            # --> Normal request with proxy
+            # Normal request with proxy
             normal_resp = session.get(
                 domainlist, 
                 verify=False, 
@@ -827,7 +826,7 @@ if args.j:
                 if response.status == 200:
                     return await response.text()
                 elif response.status == 404:
-                    # --> Silently ignore 404 errors
+                    # Silently ignore 404 errors
                     return None
                 else:
                     print(f"{Fore.YELLOW}Warning: {url} returned status code {response.status}{Style.RESET_ALL}")
@@ -1220,7 +1219,7 @@ if args.api_fuzzer:
         try:
             r = s.get(url, verify=False, headers=header, timeout=5)
 
-            # --> check response text for error patterns
+            # Check response text for error patterns
             page_text = r.text.lower()
             found_patterns = []
             for pattern in error_patterns:
@@ -1229,7 +1228,7 @@ if args.api_fuzzer:
             if found_patterns:
                 return f"{Fore.RED}{url} - {', '.join(found_patterns)}"
 
-            # --> check beautifulsoup for error patterns
+            # Check beautifulsoup for error patterns
             soup = BeautifulSoup(r.text, "html.parser")
             if soup.find("title") and "404" in soup.find("title").text.lower():
                 pass
@@ -1536,7 +1535,7 @@ if args.print_all_ips:
 
 
 if args.xss_scan:
-    # --> define rate limit: 5 calls per second
+    # Define rate limit: 5 calls per second
     CALLS = 5
     RATE_LIMIT = 1
 
@@ -1606,7 +1605,7 @@ if args.xss_scan:
                 except requests.RequestException as e:
                     print(f"{Fore.YELLOW}Error scanning {test_url}: {str(e)}{Fore.RESET}")
                 finally:
-                    bar()  # --> Increment the progress bar for each payload scanned
+                    bar()  # Increment the progress bar for each payload scanned
         
         return vulnerabilities
 
@@ -1619,7 +1618,7 @@ if args.xss_scan:
                 payloads = [x.strip() for x in f.readlines()]
             
             total_payloads = 0
-            # --> calculate total payloads based on number of URLs and number of payloads per URL
+            # Calculate total payloads based on number of URLs and number of payloads per URL
             for url in urls:
                 parsed_url = urlparse(url)
                 params = parse_qs(parsed_url.query)
@@ -1664,18 +1663,18 @@ if args.xss_scan:
 if args.sqli_scan:
     init(autoreset=True)
 
-    # --> rate Limiting Configuration
-    RATE_LIMIT = 5  # --> maximum number of requests per second
-    REQUEST_INTERVAL = 1 / RATE_LIMIT  # --> interval between requests in seconds
+    # Rate Limiting Configuration
+    RATE_LIMIT = 5  # Maximum number of requests per second
+    REQUEST_INTERVAL = 1 / RATE_LIMIT  # Interval between requests in seconds
 
     def generate_random_string(length=8):
         return ''.join(random.choices(string.ascii_letters + string.digits, k=length))
 
     def encode_payload(payload):
         encodings = [
-            lambda x: x,  # -->  No encoding
-            lambda x: quote_plus(x),  # --> URL encoding
-            lambda x: ''.join(f'%{ord(c):02X}' for c in x),  # --> Full URL encoding
+            lambda x: x,  # No encoding
+            lambda x: quote_plus(x),  # URL encoding
+            lambda x: ''.join(f'%{ord(c):02X}' for c in x),  # Full URL encoding
         ]
         return random.choice(encodings)(payload)
 
@@ -1746,9 +1745,9 @@ if args.sqli_scan:
                 except requests.RequestException as e:
                     print_queue.put(f"{Fore.YELLOW}Error scanning {test_url}: {str(e)}{Fore.RESET}")
                 finally:
-                    bar()  # -->  Increment the progress bar for each payload scanned
+                    bar()  # Increment the progress bar for each payload scanned
             
-            # --> Boolean-based blind SQLi
+            # Boolean-based blind SQLi
             rate_limiter.acquire()
             original_params = params.copy()
             original_params[param] = ["1 AND 1=1"]
@@ -1779,9 +1778,9 @@ if args.sqli_scan:
             except requests.RequestException as e:
                 print_queue.put(f"{Fore.YELLOW}Error during boolean-based test for {url}: {str(e)}{Fore.RESET}")
             finally:
-                bar()  # --> Increment the progress bar even if vulnerability is found
+                bar()  # Increment the progress bar even if vulnerability is found
                 
-            # --> Time-based blind SQLi
+            # Time-based blind SQLi
             rate_limiter.acquire()
             time_payload = "1' AND (SELECT * FROM (SELECT(SLEEP(5)))a) AND '1'='1"
             encoded_time_payload = encode_payload(time_payload)
@@ -1811,7 +1810,7 @@ if args.sqli_scan:
             except requests.RequestException as e:
                 print_queue.put(f"{Fore.YELLOW}Error during time-based test for {url}: {str(e)}{Fore.RESET}")
             finally:
-                bar()  # -->  Increment the progress bar for each payload scanned
+                bar()  # Increment the progress bar for each payload scanned
 
     def print_worker(print_queue):
         while True:
@@ -1843,12 +1842,12 @@ if args.sqli_scan:
             return []
 
         total_payloads = 0
-        # --> Calculate total payloads based on number of URLs and number of payloads per URL
+        # Calculate total payloads based on number of URLs and number of payloads per URL
         for url in urls:
             parsed_url = urlparse(url)
             params = parse_qs(parsed_url.query)
             if params:
-                # -->  Error-based payloads
+                # Error-based payloads
                 error_payloads = [
                     "' OR '1'='1",
                     "' OR '1'='1' --",
@@ -1860,10 +1859,10 @@ if args.sqli_scan:
                 ]
                 total_payloads += len(params) * len(error_payloads)
                 
-                #--> Boolean-based payloads (1 per parameter)
+                # Boolean-based payloads (1 per parameter)
                 total_payloads += len(params) * 1
                 
-                # --> Time-based payloads (1 per parameter)
+                # Time-based payloads (1 per parameter)
                 total_payloads += len(params) * 1
 
         if total_payloads == 0:
@@ -1871,7 +1870,7 @@ if args.sqli_scan:
             return []
 
         all_vulnerabilities = []
-        # --> Initialize the rate limiter
+        # Initialize the rate limiter
         rate_limiter = threading.Semaphore(RATE_LIMIT)
 
         def release_rate_limiter():
@@ -1879,7 +1878,7 @@ if args.sqli_scan:
                 time.sleep(REQUEST_INTERVAL)
                 rate_limiter.release()
 
-        # --> Start a thread to release the semaphore at the defined rate
+        # Start a thread to release the semaphore at the defined rate
         rate_thread = threading.Thread(target=release_rate_limiter, daemon=True)
         rate_thread.start()
 
@@ -2003,13 +2002,13 @@ if args.javascript_scan:
             response = requests.get(url, timeout=10)
             soup = BeautifulSoup(response.text, 'html.parser')
             
-            # --> Find <script> tags with src attribute
+            # Find <script> tags with src attribute
             for script in soup.find_all('script', src=True):
                 script_url = urljoin(url, script['src'])
                 if is_valid_url(script_url):
                     js_files.add(script_url)
             
-            # --> Find JavaScript files in <link> tags
+            # Find JavaScript files in <link> tags
             for link in soup.find_all('link', rel='stylesheet'):
                 if 'href' in link.attrs:
                     css_url = urljoin(url, link['href'])
@@ -2021,7 +2020,7 @@ if args.javascript_scan:
                             if is_valid_url(full_js_url):
                                 js_files.add(full_js_url)
             
-            # --> Find JavaScript files mentioned in inline scripts
+            # Find JavaScript files mentioned in inline scripts
             for script in soup.find_all('script'):
                 if script.string:
                     js_urls = re.findall(r'[\'"]([^\'"]*\.js)[\'"]', script.string)
@@ -2041,7 +2040,7 @@ if args.javascript_scan:
             content = response.text
             size = len(content)
             
-            # --> Analysis patterns
+            # Analysis patterns
             interesting_patterns = {
                 'API Keys': r'(?i)(?:api[_-]?key|apikey)["\s:=]+(["\'][a-zA-Z0-9_\-]{20,}["\'])',
                 'Passwords': r'(?i)(?:password|passwd|pwd)["\s:=]+(["\'][^"\']{8,}["\'])',
@@ -2114,7 +2113,7 @@ if args.javascript_endpoints:
         return None
 
     def find_endpoints(js_content):
-        # --> This regex pattern looks for common endpoint patterns in JavaScript
+        # This regex pattern looks for common endpoint patterns in JavaScript
         endpoint_pattern = r'(?:"|\'|\`)(/(?:api/)?[\w-]+(?:/[\w-]+)*(?:\.\w+)?)'
         endpoints = set(re.findall(endpoint_pattern, js_content))
         return endpoints
@@ -2616,7 +2615,7 @@ if args.subdomaintakeover:
             if response.status == 404:
                 print(f"[Potential Takeover] {subdomain} - 404 Not Found")
                 potential_takeover.add(subdomain)
-                # --> Save potential takeovers to a file for further analysis
+                # Save potential takeovers to a file for further analysis
                 with open('potential_takeover.txt', 'w') as f:
                     for sub in potential_takeover:
                         f.write(f"{sub}\n")
@@ -2633,9 +2632,9 @@ if args.subdomaintakeover:
             for rdata in answers:
                 target = str(rdata.target).rstrip('.')
                 print(f"{Fore.MAGENTA}[CNAME] {Fore.CYAN}{subdomain}{Style.RESET_ALL} points to {Fore.GREEN}{target}{Style.RESET_ALL}")
-                check_whois(target)  # --> Check WHOIS for the CNAME target
+                check_whois(target)  # Check WHOIS for the CNAME target
         except (dns.resolver.NoAnswer, dns.resolver.NXDOMAIN):
-            pass  # --> No CNAME record found
+            pass  # No CNAME record found
         except Exception as e:
             print(f"{Fore.RED}[DNS Error] {Fore.CYAN}{subdomain} - {Fore.RED}{e}{Style.RESET_ALL}")
 
@@ -2832,11 +2831,11 @@ if args.autorecon:
         print(f"{Fore.MAGENTA}Searching Shodan for {Fore.CYAN}{target}{Style.RESET_ALL}...")
         results = []
         try:
-            #  --> Perform the Shodan search
+            # Perform the Shodan search
             results = shodan_api.search(target)
             print(f"Found {results['total']} results for {target}.")
             
-            # --> extract subdomains, port numbers, and services
+            # Extract subdomains, port numbers, and services
             extracted_data = []
             for match in results['matches']:
                 ip = match['ip_str']
@@ -2859,19 +2858,19 @@ if args.autorecon:
             with open('site_links.txt', 'w') as f:
                 for link in site_links:
                     f.write(f"{link}\n")
-            bar()  #  --> Update after crawling site
+            bar()  # Update after crawling site
 
-            all_links = site_links  #  --> only site links now
+            all_links = site_links  # Only site links now
 
-            # --> extract javaScript files, passing the 
+            # Extract JavaScript files, passing the 
             js_files = await extract_js_files(all_links, target)
             print(f"{Fore.MAGENTA}Found {Fore.CYAN}{len(js_files)}{Style.RESET_ALL} JavaScript files.")
             with open('js_files.txt', 'w') as f:
                 for js_file in js_files:
                     f.write(f"{js_file}\n")
-            bar()  # -->  Update after extracting JS files
+            bar()  # Update after extracting JS files
 
-            # --> wayback urls 
+            #Wayback urls 
             waybackurls = await waybackpy(target)
             with open('waybackurls.txt', 'w') as f:
                 f.write(f"{waybackurls}\n")
@@ -2879,9 +2878,9 @@ if args.autorecon:
             with open('waybackurls.txt', 'r') as f:
                 waybackurls_lines = [line.strip() for line in f if line.strip()]
                 print(f"{Fore.MAGENTA}Found {Fore.CYAN}{len(waybackurls_lines)}{Style.RESET_ALL} waybackurls.")
-            bar()  # -->  Update after waybackurls
+            bar()  # Update after waybackurls
 
-            # --> naabu portscan
+            #Naabu portscan
             ports = await portscan(target)
             with open('ports.txt', 'w') as f:
                 f.write(f"{ports}\n")
@@ -2894,9 +2893,9 @@ if args.autorecon:
                     numbers.extend(found_numbers)     
                 print(f"{Fore.MAGENTA}Found {Fore.CYAN}{len(ports_lines)}{Style.RESET_ALL} Open Ports.")
                 print(f"{Fore.MAGENTA}Open Ports: {Fore.CYAN}{', '.join(map(str, numbers))}{Style.RESET_ALL}")
-            bar()  # --> Update after ports scan
+            bar()  # Update after ports scan
 
-            # --> get headers
+            #Get headers
             getheaders = await headers_info(target)
             target2 = target.replace("https://", "").replace("http://", "").replace("www.", "")
             with open(f"headers.txt", "w") as f:
@@ -2904,12 +2903,12 @@ if args.autorecon:
                     f.write(f"{header}\n")
             bar()
 
-            # --> server info
+            #Server info
             serverinfo = await server_info(target)
             print(f"{Fore.MAGENTA}Server: {Fore.CYAN}{serverinfo}{Style.RESET_ALL}")
             bar()
 
-            # --> dnsscan
+            #Dnsscan
             dns = await dnsscan(target)
             with open('dnsscan.json', 'w') as f:
                 f.write(f"{dns}\n")
@@ -2917,15 +2916,15 @@ if args.autorecon:
             dns_output = scan(f"python3 dnsparser.py -dns dnsscan.json")
             with open('dns_output.txt', 'w') as f:
                 f.write(f"{dns_output}\n")
-            bar()  # -->  Update after dnsscan
+            bar()  # Update after dnsscan
 
-            # --> techdetect
+            #Techdetect
             tech = await techdetect(target)
             print(f"{Fore.MAGENTA}Tech Detect: {Fore.CYAN}{tech}{Style.RESET_ALL}")
             with open('techdetect.txt', 'w') as f:
                 for techs in tech:
                     f.write(f"{techs}\n")
-            bar()  # --> Update after techdetect
+            bar()  # Update after techdetect
 
             parameters = extract_parameters(all_links)
             links_params = set()
@@ -2934,18 +2933,18 @@ if args.autorecon:
             with open('links_params.txt', 'w') as f:
                 for link in links_params:
                     f.write(f"{link}\n")
-            bar()  #--> Update after extracting parameters
+            bar()  # Update after extracting parameters
 
             # Print parameters for each link
             for link in links_params:
                 print(f"{Fore.MAGENTA}Found {Fore.CYAN}{len(links_params)}{Style.RESET_ALL} Links with Parameters")
 
-            # --> Perform Shodan search and save results to a file
+            # Perform Shodan search and save results to a file
             shodan_results = shodan_search(target, shodankey)
             with open('shodan_results.txt', 'w') as f:
                 for result in shodan_results:
                     f.write(f"{result}\n")
-            bar()  # U--> pdate after Shodan search
+            bar()  # Update after Shodan search
 
             ssl_scan = await ssl_vuln_scan(target)  
             print(f"{Fore.MAGENTA}TLS/SSL Scan: {Fore.CYAN}ssl_info.txt{Style.RESET_ALL}")
