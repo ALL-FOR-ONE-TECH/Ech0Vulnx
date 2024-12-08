@@ -89,7 +89,7 @@ def main():
     for key, value in axfr_info.items():
         print(f"  {key}: {value}")
     print()
-    # Saving AXFR info as JSON
+    # --> Saving AXFR info as JSON
     try:
         with open('axfr_info.json', 'w') as file:
             json.dump(axfr_info, file, indent=4)

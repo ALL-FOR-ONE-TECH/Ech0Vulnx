@@ -66,17 +66,17 @@ def install_tool(name, install_cmd, check_cmd=None):
         print(f"Found {name}")
 
 def install_go_tool(tool, package):
-    print(f"Installing {tool}...")  # Removed colorama formatting
+    print(f"Installing {tool}...")  # --> Removed colorama formatting
     if run_command(f"go install {package}") is not None:
         go_path = run_command("go env GOPATH").strip()
         bin_path = os.path.join(go_path, "bin", tool)
         if os.path.exists(bin_path):
             run_command(f"sudo mv {bin_path} /usr/local/bin/")
-            print(f"{tool} installed successfully")  # Removed colorama formatting
+            print(f"{tool} installed successfully")  # -->  Removed colorama formatting
         else:
-            print(f"Failed to find {tool} in GOPATH")  # Removed colorama formatting
+            print(f"Failed to find {tool} in GOPATH")  # --> Removed colorama formatting
     else:
-        print(f"Failed to install {tool}")  # Removed colorama formatting
+        print(f"Failed to install {tool}")  # --> Removed colorama formatting
 
 
 def check_wsl():
@@ -89,7 +89,7 @@ def check_wsl():
     return False
 
 def update_upgrade_system(package_manager):
-    print(f"Updating and upgrading the system...")  # Removed colorama formatting
+    print(f"Updating and upgrading the system...")  # -->  Removed colorama formatting
     if package_manager == "apt":
         run_command("sudo apt update && sudo apt upgrade -y")
     elif package_manager in ["dnf", "yum"]:
@@ -100,12 +100,12 @@ def update_upgrade_system(package_manager):
         run_command("sudo zypper update -y")
     elif package_manager == "apk":
         run_command("sudo apk update && sudo apk upgrade")
-    print(f"System updated and upgraded successfully")  # Removed colorama formatting
+    print(f"System updated and upgraded successfully")  # --> Removed colorama formatting
     
 
 def ensure_pip_installed(package_manager):
     if not which("pip3") and not which("pip"):
-        print(f"pip is not installed. Installing pip...")  # Removed colorama formatting
+        print(f"pip is not installed. Installing pip...")  # --> Removed colorama formatting
         if platform.system() == "Linux":
             if package_manager == "apt":
                 run_command("sudo apt install -y python3-pip")
@@ -118,61 +118,61 @@ def ensure_pip_installed(package_manager):
             elif package_manager == "apk":
                 run_command("sudo apk add py3-pip")
         elif platform.system() == "Darwin":
-            run_command("brew install python")  # This will install pip as well
-        print(f"pip installed successfully")  # Removed colorama formatting
+            run_command("brew install python")  # --> This will install pip as well
+        print(f"pip installed successfully")  # --> Removed colorama formatting
     else:
-        print(f"pip is already installed")  # Removed colorama formatting
+        print(f"pip is already installed")  # --> Removed colorama formatting
 
 def main():
     system = platform.system()
     is_wsl = check_wsl()
 
     if is_wsl:
-        print(f"Detected Windows Subsystem for Linux (WSL)")  # Removed colorama formatting
+        print(f"Detected Windows Subsystem for Linux (WSL)")  # --> Removed colorama formatting
 
     if system == "Linux":
         package_manager = detect_package_manager()
         if package_manager is None:
-            print(f"Unable to detect package manager. Please install packages manually.")  # Removed colorama formatting
+            print(f"Unable to detect package manager. Please install packages manually.")  # --> Removed colorama formatting
             return
-        print(f"Detected package manager: {package_manager}")  # Removed colorama formatting
+        print(f"Detected package manager: {package_manager}")  # --> Removed colorama formatting
         
         if is_wsl:
             update_upgrade_system(package_manager)
     elif system == "Darwin":  # macOS
         package_manager = "brew"
         if not which("brew"):
-            print(f"Homebrew is required for macOS. Please install it first.")  # Removed colorama formatting
+            print(f"Homebrew is required for macOS. Please install it first.")  # --> Removed colorama formatting
             return
     else:
-        print(f"Unsupported operating system: {system}")  # Removed colorama formatting
+        print(f"Unsupported operating system: {system}")  # --> Removed colorama formatting
         return
 
     ensure_pip_installed(package_manager)
 
     home = os.path.expanduser("~")
     
-    # Install colorama
-    # install_tool("colorama", lambda: install_package("colorama", "pip"))  # Removed colorama installation
+    # --> install colorama
+    # --> install_tool("colorama", lambda: install_package("colorama", "pip"))  # --> Removed colorama installation
 
-    # Install golang
+    # --> Install golang
     install_tool("go", lambda: install_package("golang", package_manager))
 
-    # Install nodejs and npm
+    # --> Install nodejs and npm
     install_tool("node", lambda: install_package("nodejs", package_manager))
     install_tool("npm", lambda: install_package("npm", package_manager))
 
-    # Install broken-link-checker
+    # --> Install broken-link-checker
     install_tool("blc", lambda: install_package("broken-link-checker", "npm"))
 
-    # Install nuclei
+    # --> Install nuclei
     install_go_tool("nuclei", "github.com/projectdiscovery/nuclei/v2/cmd/nuclei@latest")
 
-    # Clone nuclei-templates
+    # --> Clone nuclei-templates
     if not os.path.exists(os.path.join(home, "nuclei-templates")):
         run_command(f"git clone https://github.com/projectdiscovery/nuclei-templates.git {home}/nuclei-templates")
 
-    # Install other tools
+    # --> Install other tools
     tools = [
         ("dnsx", "github.com/projectdiscovery/dnsx/cmd/dnsx@latest"),
         ("subfinder", "github.com/projectdiscovery/subfinder/v2/cmd/subfinder@latest"),
@@ -191,13 +191,13 @@ def main():
     for tool, go_package in tools:
         install_go_tool(tool, go_package)
 
-    # Install jq
+    # --> Install jq
     install_tool("jq", lambda: install_package("jq", package_manager))
 
-    # Install shodan
+    # --> Install shodan
     install_tool("shodan", lambda: install_package("shodan", "pip"))
 
-    # Install paramspider
+    # --> Install paramspider
     install_tool("paramspider", lambda: run_command("git clone https://github.com/devanshbatham/paramspider && cd paramspider && python3 setup.py install"))
 
 if __name__ == "__main__":
