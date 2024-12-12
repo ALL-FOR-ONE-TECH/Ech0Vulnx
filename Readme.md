@@ -70,6 +70,12 @@ pip3 install -r requirements.txt
 sudo python3 install.py
 
 ```
+# Fast Installation dependencies
+```bash
+
+sudo go run main.go 
+
+```
 
 
 # USAGE 
