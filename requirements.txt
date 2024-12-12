@@ -16,4 +16,3 @@ waybackpy
 ratelimit
 pyjwt
 boto3
-mmap
