@@ -9,20 +9,19 @@ import (
 	"sync"
 )
 
-// RunCommand executes a shell command and returns its output
+// --> RunCommand executes a shell command
 func RunCommand(cmd string) (string, error) {
 	fmt.Printf("Running command: %s\n", cmd)
 	output, err := exec.Command("bash", "-c", cmd).CombinedOutput()
 	if err != nil {
-		return "", fmt.Errorf("error running command: %s, output: %s", err, string(output))
+		return "", fmt.Errorf("error running command: %v, output: %s", err, string(output))
 	}
 	return string(output), nil
 }
 
-// DetectPackageManager detects the package manager based on the system
+// --> Detects the package manager based on the system
 func DetectPackageManager() string {
 	packageManagers := []string{"apt", "yum", "zypper", "dnf", "apk", "pacman"}
-
 	for _, pm := range packageManagers {
 		if _, err := exec.LookPath(pm); err == nil {
 			return pm
@@ -31,7 +30,7 @@ func DetectPackageManager() string {
 	return ""
 }
 
-// InstallPackage installs a package using the detected package manager
+// --> Installs a package using the detected package manager
 func InstallPackage(packageName, manager string) error {
 	var cmd string
 	switch manager {
@@ -50,23 +49,22 @@ func InstallPackage(packageName, manager string) error {
 	return err
 }
 
-// InstallGoTool installs a Go tool using `go install`
+// --> Installs a Go tool using `go install`
 func InstallGoTool(tool, packageName string) error {
 	fmt.Printf("Installing Go tool: %s\n", tool)
 	_, err := RunCommand(fmt.Sprintf("go install %s", packageName))
 	if err != nil {
-		return err
+		return fmt.Errorf("failed to install Go tool %s: %w", tool, err)
 	}
 	return nil
 }
 
-// InstallTool installs a tool either through a package manager or directly from source
-func InstallTool(name, installCmd string, checkCmd string) {
+// --> Installs a tool either through a package manager or directly from source
+func InstallTool(name, installCmd, checkCmd string) {
 	if _, err := exec.LookPath(checkCmd); err != nil {
 		fmt.Printf("Installing %s...\n", name)
-		_, err := RunCommand(installCmd)
-		if err != nil {
-			fmt.Printf("Failed to install %s\n", name)
+		if _, err := RunCommand(installCmd); err != nil {
+			fmt.Printf("Failed to install %s: %v\n", name, err)
 		} else {
 			fmt.Printf("%s installed successfully\n", name)
 		}
@@ -75,7 +73,7 @@ func InstallTool(name, installCmd string, checkCmd string) {
 	}
 }
 
-// CheckWSL checks if the system is WSL
+// --> Checks if the system is WSL (Windows Subsystem for Linux)
 func CheckWSL() bool {
 	if runtime.GOOS == "linux" {
 		data, err := ioutil.ReadFile("/proc/version")
@@ -87,7 +85,8 @@ func CheckWSL() bool {
 	return false
 }
 
-func UpdateUpgradeSystem(packageManager string) {
+// --> Updates and upgrades the system using the detected package manager
+func UpdateUpgradeSystem(packageManager string) error {
 	fmt.Println("Updating and upgrading the system...")
 	switch packageManager {
 	case "apt":
@@ -100,11 +99,15 @@ func UpdateUpgradeSystem(packageManager string) {
 		_, _ = RunCommand("sudo zypper update -y")
 	case "apk":
 		_, _ = RunCommand("sudo apk update && sudo apk upgrade")
+	default:
+		return fmt.Errorf("unsupported package manager: %s", packageManager)
 	}
 	fmt.Println("System updated and upgraded successfully.")
+	return nil
 }
 
-func EnsurePipInstalled(packageManager string) {
+// -->  pip is installed on the system
+func EnsurePipInstalled(packageManager string) error {
 	if _, err := exec.LookPath("pip3"); err != nil {
 		fmt.Println("pip is not installed. Installing pip...")
 		switch packageManager {
@@ -120,9 +123,10 @@ func EnsurePipInstalled(packageManager string) {
 			_, _ = RunCommand("sudo apk add py3-pip")
 		}
 		fmt.Println("pip installed successfully.")
-	} else {
-		fmt.Println("pip is already installed.")
+		return nil
 	}
+	fmt.Println("pip is already installed.")
+	return nil
 }
 
 func main() {
@@ -131,6 +135,7 @@ func main() {
 		fmt.Println("Detected Windows Subsystem for Linux (WSL)")
 	}
 
+	// --> Detect the package manager
 	packageManager := DetectPackageManager()
 	if packageManager == "" {
 		fmt.Println("Unable to detect package manager. Please install packages manually.")
@@ -139,21 +144,33 @@ func main() {
 
 	fmt.Printf("Detected package manager: %s\n", packageManager)
 
-	// Update and upgrade the system (if on WSL)
 	if isWSL {
-		UpdateUpgradeSystem(packageManager)
+		if err := UpdateUpgradeSystem(packageManager); err != nil {
+			fmt.Println("Error updating system:", err)
+			return
+		}
 	}
 
-	EnsurePipInstalled(packageManager)
+	if err := EnsurePipInstalled(packageManager); err != nil {
+		fmt.Println("Error ensuring pip installation:", err)
+		return
+	}
 
-	// Install Go and other tools
-	InstallTool("go", "sudo apt install -y golang", "go")
-	InstallTool("node", "sudo apt install -y nodejs", "node")
-	InstallTool("npm", "sudo apt install -y npm", "npm")
-	InstallTool("jq", "sudo apt install -y jq", "jq")
-	InstallTool("shodan", "pip3 install shodan", "shodan")
+	// --> Install tools (using InstallTool function for each)
+	tools := map[string][2]string{
+		"go":          {"sudo apt install -y golang", "go"},
+		"node":        {"sudo apt install -y nodejs", "node"},
+		"npm":         {"sudo apt install -y npm", "npm"},
+		"jq":          {"sudo apt install -y jq", "jq"},
+		"shodan":      {"pip3 install shodan", "shodan"},
+		"paramspider": {"sudo apt install -y paramspider"},
+	}
 
-	// Install Go tools concurrently
+	for name, cmd := range tools {
+		InstallTool(name, cmd[0], cmd[1])
+	}
+
+	// --> Go tools
 	var wg sync.WaitGroup
 	goTools := map[string]string{
 		"nuclei":      "github.com/projectdiscovery/nuclei/v2/cmd/nuclei@latest",
@@ -174,9 +191,12 @@ func main() {
 		}(tool, pkg)
 	}
 
-	// Wait for all Go tools to finish
+	// --> Wait for tools to finish
 	wg.Wait()
 
-	// Install other tools like broken-link-checker, paramspider, etc.
+	//  -->  paramspider
 	InstallTool("paramspider", "git clone https://github.com/devanshbatham/paramspider && cd paramspider && python3 setup.py install", "paramspider")
+
+	// --> httpx
+	InstallTool("httpx", "go get -u github.com/projectdiscovery/httpx/cmd/httpx", "httpx")
 }
