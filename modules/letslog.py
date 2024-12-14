@@ -1,3 +1,4 @@
+#!/bin/python
 import logging
 
 class ErrorLogger:

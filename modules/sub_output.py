@@ -1,3 +1,4 @@
+#!/bin/python
 import subprocess
 
 def subpro_scan(command: str) -> str:

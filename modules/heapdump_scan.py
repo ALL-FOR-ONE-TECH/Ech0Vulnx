@@ -1,3 +1,4 @@
+#!/bin/python
 from colorama import Fore
 from datetime import datetime
 from letslog import ErrorLogger

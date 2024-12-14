@@ -1,3 +1,6 @@
+#!/bin/python
+
+# --> Importing the resource packages
 from colorama import Fore, init, Style
 from os import path
 from builtwith import builtwith

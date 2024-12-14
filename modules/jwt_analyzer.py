@@ -1,3 +1,4 @@
+#!/bin/python
 import jwt
 import json
 import base64

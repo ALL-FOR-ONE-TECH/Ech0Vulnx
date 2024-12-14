@@ -1,3 +1,5 @@
+#!/bin/python
+
 import json
 
 def load_json(file_path):

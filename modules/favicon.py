@@ -1,3 +1,4 @@
+#!/bin/python
 from shodan import Shodan
 import sys
 

@@ -1,3 +1,6 @@
+#!/bin/python
+
+
 """
 This function connects to the specified domain and port, retrieves the SSL/TLS 
     certificate, and extracts the following information:

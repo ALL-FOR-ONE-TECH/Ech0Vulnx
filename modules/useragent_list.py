@@ -1,3 +1,4 @@
+#!/bin/python
 import random
 
 _useragent_list = [

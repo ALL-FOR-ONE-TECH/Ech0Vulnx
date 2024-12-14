@@ -1,3 +1,6 @@
+#!/bin/python
+
+# --> Importing the resource package 
 import platform
 import subprocess
 import os
