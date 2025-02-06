@@ -467,10 +467,20 @@ class JWTAnalyzer:
                 print(f"{Fore.RED}Error saving token: {str(e)}{Style.RESET_ALL}")
 
 def main():
-    print(f"""{Fore.CYAN}
-    ╔═╗┌─┐┬ ┬╦ ╦┬ ┬┌┐┌┌┬┐  ╔═╗╦ ╦╔╦╗  ╔═╗┌┐┌┌─┐┬ ┬┬─┐┌─┐┬─┐
-    ╚═╗├─┘└┬┘╠═╣│ ││││ │   ╠═╝║║║ ║   ╠═╣│││├─┤│ │┌┬┘├┤ ├┬┘
-    ╚═╝┴   ┴ ╩ ╩└─┘┘└┘ ┴   ╩  ╚╩╝ ╩   ╩ ╩┘└┘┴ ┴└─┘┴└─└─┘┴└─
+    print(f"""{Fore.CYAN}                                                    
+  itttttttt                            
+  fDDK##DDi          ;        GEEEEEEEL
+     t#E           .DL        ,;;L#K;;.
+     t#E   f.     :K#L     LWL   t#E   
+     t#E   EW:   ;W##L   .E#f    t#E   
+     t#E   E#t  t#KE#L  ,W#;     t#E   
+     t#E   E#t f#D.L#L t#K:      t#E   
+   jfL#E   E#jG#f  L#LL#G        t#E   
+   :K##E   E###;   L###j         t#E   
+     G#E   E#K:    L#W;          t#E   
+      tE   EG      LE.            fE   
+       .   ;       ;@              :   
+                                       
     JWT Token Security Analyzer & Modifier
     {Style.RESET_ALL}""")
 

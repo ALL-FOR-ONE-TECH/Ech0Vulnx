@@ -1,16 +1,3 @@
-#!/bin/python
-
-
-"""
-This function connects to the specified domain and port, retrieves the SSL/TLS 
-    certificate, and extracts the following information:
-    - TLS version used
-    - Cipher suite used
-    - Issuer of the certificate
-    - Subject of the certificate
-    - Certificate validity dates (from and to)"""
-
-
 import ssl
 import socket
 from datetime import datetime

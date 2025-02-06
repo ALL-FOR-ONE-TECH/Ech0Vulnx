@@ -1,17 +1,11 @@
-#!/bin/python
 from colorama import Fore
 from datetime import datetime
-from letslog import ErrorLogger
 import requests
 import argparse
 import concurrent.futures
 import urllib3
-import logging
 
 urllib3.disable_warnings()
-
-loggings = logging.basicConfig(level=logging.INFO)
-
 
 parser = argparse.ArgumentParser(description='Heapdump scanner')
 parser.add_argument('--url', help='URL to scan')
@@ -45,62 +39,80 @@ actuator_endpoints = [
 
 def scanner(url: str) -> tuple[bool, str]:
     s = requests.Session()
-    for endpoint in actuator_endpoints:
-        headers = {
-            "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/58.0.3029.110 Safari/537.3"
-        }
-        r = s.get(f"{url}{endpoint}", timeout=int(args.timeout), headers=headers, verify=False)
-        if r.status_code == 200:
-            content_type = r.headers.get('Content-Type', '')
-            
-            # Binary content endpoints
-            if endpoint == "/actuator/heapdump" and 'application/octet-stream' in content_type:
-                    return True, endpoint
-            
-            # Plain text endpoints
-            elif endpoint == "/actuator/logfile" and 'text/plain' in content_type:
-                return True, endpoint
-            
-            # Prometheus endpoint
-            elif endpoint == "/actuator/prometheus" and 'text/plain' in content_type:
-                return True, endpoint
-            
-            # JSON endpoints (both standard and actuator-specific formats)
-            elif any(ct in content_type for ct in [
-                'application/json',
-                'application/vnd.spring-boot.actuator.v1+json',
-                'application/vnd.spring-boot.actuator.v2+json',
-                'application/vnd.spring-boot.actuator.v3+json'
-            ]) and endpoint in [
-                "/actuator/metrics",
-                "/actuator/info",
-                "/actuator/health",
-                "/actuator/loggers",
-                "/actuator/threaddump",
-                "/actuator/mappings",
-                "/actuator/conditions",
-                "/actuator/httptrace",
-                "/actuator/auditevents",
-                "/actuator/env",
-                "/actuator/beans",
-                "/actuator/caches",
-                "/actuator/scheduledtasks",
-                "/actuator/sessions",
-                "/actuator/shutdown",
-                "/actuator/trace"
-            ]:
-                # Additional validation for JSON endpoints
-                try:
-                    response_json = r.json()
-                    if "404" in response_json.lower() or "not found" in response_json.lower():
-                        return False, endpoint
-                    if isinstance(response_json, (dict, list)) and response_json:  # Ensure non-empty response
-                        return True, endpoint
-                except:
-                    pass
+    try:
+        for endpoint in actuator_endpoints:
+            print(f"{Fore.CYAN}[*] Trying {url}{endpoint}{Fore.RESET}")  # Debug output
+            headers = {
+                "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/58.0.3029.110 Safari/537.3"
+            }
+            try:
+                if url.endswith("/"):
+                    url = url[:-1]
+                else:
+                    url = url
+                r = s.get(f"{url}{endpoint}", timeout=int(args.timeout), headers=headers, verify=False)
+                print(f"{Fore.YELLOW}[*] Status: {r.status_code}{Fore.RESET}")  # Debug output
+                
+                if r.status_code == 200:
+                    content_type = r.headers.get('Content-Type', '')
                     
-        if r.status_code == 404:
-                return False, endpoint
+                    # Binary content endpoints
+                    if endpoint == "/actuator/heapdump" and 'application/octet-stream' in content_type:
+                            return True, endpoint
+                    
+                    # Plain text endpoints
+                    elif endpoint == "/actuator/logfile" and 'text/plain' in content_type:
+                        return True, endpoint
+                    
+                    # Prometheus endpoint
+                    elif endpoint == "/actuator/prometheus" and 'text/plain' in content_type:
+                        return True, endpoint
+                    
+                    # JSON endpoints (both standard and actuator-specific formats)
+                    elif any(ct in content_type for ct in [
+                        'application/json',
+                        'application/vnd.spring-boot.actuator.v1+json',
+                        'application/vnd.spring-boot.actuator.v2+json',
+                        'application/vnd.spring-boot.actuator.v3+json'
+                    ]) and endpoint in [
+                        "/actuator/metrics",
+                        "/actuator/info",
+                        "/actuator/health",
+                        "/actuator/loggers",
+                        "/actuator/threaddump",
+                        "/actuator/mappings",
+                        "/actuator/conditions",
+                        "/actuator/httptrace",
+                        "/actuator/auditevents",
+                        "/actuator/env",
+                        "/actuator/beans",
+                        "/actuator/caches",
+                        "/actuator/scheduledtasks",
+                        "/actuator/sessions",
+                        "/actuator/shutdown",
+                        "/actuator/trace"
+                    ]:
+                        # Additional validation for JSON endpoints
+                        try:
+                            response_json = r.json()
+                            if "404" in response_json.lower() or "not found" in response_json.lower():
+                                return False, endpoint
+                            if isinstance(response_json, (dict, list)) and response_json:  # Ensure non-empty response
+                                return True, endpoint
+                        except:
+                            pass
+                    
+            except requests.exceptions.Timeout:
+                print(f"{Fore.RED}[-] Timeout on {endpoint}{Fore.RESET}")
+                continue
+            except requests.exceptions.RequestException as e:
+                print(f"{Fore.RED}[-] Error on {endpoint}: {str(e)}{Fore.RESET}")
+                continue
+                
+    except Exception as e:
+        print(f"{Fore.RED}[-] Scanner error: {str(e)}{Fore.RESET}")
+        return False, ""
+    
     return False, ""
 
 def save_result(domain: str, endpoint: str):
@@ -112,19 +124,15 @@ def save_result(domain: str, endpoint: str):
         f.write(f"{domain} - {endpoint}\n")
 
 def file_scanner(domain: str) -> bool:
-    logger = ErrorLogger().error_logger()
     try:
         success, endpoint = scanner(domain)
         if success:
-            logging.info(f"{Fore.GREEN}[+] {Fore.WHITE}{domain} - {Fore.CYAN}{endpoint}{Fore.RESET}")
-            #print(f"{Fore.GREEN}[+] {Fore.WHITE}{domain} - {Fore.CYAN}{endpoint}{Fore.RESET}")
+            print(f"{Fore.GREEN}[+] {Fore.WHITE}{domain} - {Fore.CYAN}{endpoint}{Fore.RESET}")
             save_result(domain, endpoint)
         else:
-            logging.info(f"{Fore.RED}[-] {Fore.WHITE}{domain}{Fore.RESET}")        
-            #print(f"{Fore.RED}[-] {Fore.WHITE}{domain}{Fore.RESET}")
+            print(f"{Fore.RED}[-] {Fore.WHITE}{domain}{Fore.RESET}")
     except Exception as e:
-        logging.error(f"{Fore.RED}[-] {Fore.WHITE}{domain}{Fore.RESET}")
-        logger.exception(f"{Fore.RED}[-] {Fore.WHITE}{domain}{Fore.RESET}\n")
+        print(f"{Fore.RED}[-] {Fore.WHITE}{domain}{Fore.RESET}")
 
 if __name__ == "__main__":
     timestamp = datetime.now().strftime("%Y-%m-%d_%H-%M-%S")

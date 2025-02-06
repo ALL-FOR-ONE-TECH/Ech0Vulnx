@@ -1,9 +1,5 @@
-#!/bin/python
-
-# --> Importing the resource packages
 from colorama import Fore, init, Style
 from os import path
-from builtwith import builtwith
 from modules.favicon import *
 from bs4 import BeautifulSoup
 from multiprocessing.pool import ThreadPool
@@ -56,6 +52,8 @@ import urllib
 import nmap3
 import ssl
 import shutil
+import dns.zone
+import dns.query
 
 
 warnings.filterwarnings(action='ignore',module='bs4')
@@ -72,8 +70,8 @@ banner = f"""
 ###        ########## ########  ###    ### ########### ###    ###  ########   ########  ###    ####      
 
 
-                                    {Fore.GREEN} 1.0{Fore.GREEN}
-                                    {Fore.RED}A BY  H4CK3R {Fore.RED}
+                                    {Fore.GREEN} 1.1{Fore.GREEN}
+                                    {Fore.RED}A BY  whoamikiddie {Fore.RED}
 """
 
 print(Fore.MAGENTA + banner)
@@ -117,10 +115,6 @@ parser.add_argument('-th', '--threads',
 
 passiverecon_group.add_argument('-s',
                     type=str, help='scan for subdomains',
-                    metavar='domain.com')
-
-passiverecon_group.add_argument('-t', '--tech',
-                    type=str, help='find technologies',
                     metavar='domain.com')
 
 passiverecon_group.add_argument('-d', '--dns',
@@ -315,9 +309,14 @@ vuln_group.add_argument('-jwt-modify', '--jwt_modify',
                      type=str, help='modify JWT token',
                      metavar='token')
 
-vuln_group.add_argument('-heapds', '--heapdump_scan',
-                     type=str, help='scan for heapdump endpoints',
+vuln_group.add_argument('-heapds', '--heapdump_file',
+                     type=str, help='file for heapdump scan',
+                     metavar='heapdump.txt')
+
+vuln_group.add_argument('-heapts', '--heapdump_target',
+                     type=str, help='target for heapdump scan',
                      metavar='domain.com')
+
 
 
 parser.add_argument('--s3-scan', help='Scan for exposed S3 buckets')
@@ -346,6 +345,20 @@ parser.add_argument('--heapdump', help='Analyze Java heapdump file')
 
 parser.add_argument('--output-dir', help='Output directory', default='.')
 
+# Add after existing argument groups
+cloud_group = parser.add_argument_group('Cloud Security')
+cloud_group.add_argument('-aws', '--aws-scan',
+                    type=str, help='Scan for exposed AWS resources',
+                    metavar='domain.com')
+cloud_group.add_argument('-az', '--azure-scan',
+                    type=str, help='Scan for exposed Azure resources',
+                    metavar='domain.com')
+
+# Add to argument groups
+vuln_group.add_argument('-zt', '--zone-transfer', 
+                    type=str, help='Test for DNS zone transfer vulnerability',
+                    metavar='domain.com')
+
 
 
 
@@ -356,17 +369,17 @@ header = {"User-Agent": user_agent}
 
 async def update_script():
     try:
-        # --> Store current version
-        current_version = "1.0.0"  # --> Replace with your version tracking system
+        # Store current version
+        current_version = "1.0.0"  # Replace with your version tracking system
         backup_dir = "backups"
         
         print(f"{Fore.CYAN}Checking for updates...{Style.RESET_ALL}")
         
-        # -->  Create backups directory if it doesn't exist
+        # Create backups directory if it doesn't exist
         if not os.path.exists(backup_dir):
             os.makedirs(backup_dir)
         
-        #  --> Create backup of current version
+        # Create backup of current version
         timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
         backup_path = os.path.join(backup_dir, f"stealthghost_backup_{timestamp}")
         
@@ -380,38 +393,38 @@ async def update_script():
             print(f"{Fore.RED}Backup failed: {str(e)}{Style.RESET_ALL}")
             return False
 
-        # --> Check remote repository for updates
+        # Check remote repository for updates
         print(f"{Fore.CYAN}Checking remote repository...{Style.RESET_ALL}")
         try:
-            # --> Fetch without merging
+            # Fetch without merging
             subprocess.run(["git", "fetch"], check=True, capture_output=True)
             
-            # --> Get current and remote commit hashes
+            # Get current and remote commit hashes
             current = subprocess.run(["git", "rev-parse", "HEAD"], 
                                    check=True, capture_output=True, text=True).stdout.strip()
             remote = subprocess.run(["git", "rev-parse", "@{u}"], 
                                   check=True, capture_output=True, text=True).stdout.strip()
             
             if current == remote:
-                print(f"{Fore.GREEN}StealthGhost is already up to date!{Style.RESET_ALL}")
+                print(f"{Fore.GREEN}stealthghost is already up to date!{Style.RESET_ALL}")
                 return True
                 
         except subprocess.CalledProcessError as e:
             print(f"{Fore.RED}Failed to check for updates: {str(e)}{Style.RESET_ALL}")
             return False
 
-        # --> Perform update
-        print(f"{Fore.CYAN}Updating StealthGhost...{Style.RESET_ALL}")
+        # Perform update
+        print(f"{Fore.CYAN}Updating stealthghost...{Style.RESET_ALL}")
         try:
-            # --> Pull changes
+            # Pull changes
             result = subprocess.run(["git", "pull"], check=True, capture_output=True, text=True)
             
             if "Already up to date" in result.stdout:
-                print(f"{Fore.GREEN}StealthGhost is already up to date!{Style.RESET_ALL}")
+                print(f"{Fore.GREEN}stealthghost is already up to date!{Style.RESET_ALL}")
             else:
                 print(f"{Fore.GREEN}Update successful!{Style.RESET_ALL}")
                 
-                # --> Check for dependency updates
+                # Check for dependency updates
                 requirements_path = "requirements.txt"
                 if os.path.exists(requirements_path):
                     print(f"{Fore.CYAN}Updating dependencies...{Style.RESET_ALL}")
@@ -419,8 +432,8 @@ async def update_script():
                                  check=True)
                     print(f"{Fore.GREEN}Dependencies updated!{Style.RESET_ALL}")
                 
-                print(f"\n{Fore.GREEN}StealthGhost has been updated successfully!{Style.RESET_ALL}")
-                print(f"{Fore.YELLOW}Please restart StealthGhost to apply the updates.{Style.RESET_ALL}")
+                print(f"\n{Fore.GREEN}stealthghost has been updated successfully!{Style.RESET_ALL}")
+                print(f"{Fore.YELLOW}Please restart stealthghost to apply the updates.{Style.RESET_ALL}")
             
             return True
 
@@ -428,7 +441,7 @@ async def update_script():
             print(f"{Fore.RED}Update failed: {str(e)}{Style.RESET_ALL}")
             print(f"{Fore.YELLOW}Restoring from backup...{Style.RESET_ALL}")
             
-            # --> Restore from backup
+            # Restore from backup
             try:
                 shutil.rmtree(".", ignore_errors=True)
                 shutil.copytree(backup_path, ".", dirs_exist_ok=True)
@@ -443,7 +456,7 @@ async def update_script():
         print(f"{Fore.RED}An unexpected error occurred: {str(e)}{Style.RESET_ALL}")
         return False
 
-#  --> In your argument handler:
+# In your argument handler:
 if args.update:
     if asyncio.run(update_script()):
         sys.exit(0)
@@ -482,7 +495,7 @@ if args.s:
         with open(f"{args.save}", "a") as certsh:
             certsh.writelines(certshout)
 
-        # --> Shodan subdomain extraction
+        # Shodan subdomain extraction
         if args.shodan_api:
             api = shodan.Shodan(args.shodan_api)
             try:
@@ -505,7 +518,7 @@ if args.s:
         commands(f"{spotter_path} {args.s} | uniq | sort")
         commands(f"{certsh_path} {args.s} | uniq | sort")
 
-        # --> Shodan subdomain extraction
+        # Shodan subdomain extraction
         if args.shodan_api:
             api = shodan.Shodan(args.shodan_api)
             try:
@@ -694,16 +707,16 @@ if args.hostheaderinjection:
             "X-Host": "evil.com"
         }
 
-        # -->Get proxy list
+        # Get proxy list
         proxies = setup_proxies(args.proxy, args.proxy_file)
         current_proxy = None
 
         try:
-            # -->  Select proxy if available
+            # Select proxy if available
             if proxies:
                 current_proxy = random.choice(proxies)
 
-            # --> Normal request with proxy
+            # Normal request with proxy
             normal_resp = session.get(
                 domainlist, 
                 verify=False, 
@@ -829,7 +842,7 @@ if args.j:
                 if response.status == 200:
                     return await response.text()
                 elif response.status == 404:
-                    #  --> Silently ignore 404 errors
+                    # Silently ignore 404 errors
                     return None
                 else:
                     print(f"{Fore.YELLOW}Warning: {url} returned status code {response.status}{Style.RESET_ALL}")
@@ -1010,16 +1023,6 @@ if args.brokenlinks:
             print(Fore.CYAN + "ERROR!")
     else:
         commands(f"blc -r --filter-level 2 {args.brokenlinks}")
-
-if args.tech:
-    try:
-        print("\n")
-        print (Fore.CYAN + "Scanning..." + "\n")
-        info = builtwith(f"{args.tech}")
-        for framework, tech in info.items():
-            print (Fore.GREEN + framework, ":", tech)
-    except UnicodeDecodeError:
-        pass
 
 if args.smuggler:
     smug_path = os.path.abspath(os.getcwd())
@@ -1222,7 +1225,7 @@ if args.api_fuzzer:
         try:
             r = s.get(url, verify=False, headers=header, timeout=5)
 
-            #  --> Check response text for error patterns
+            # Check response text for error patterns
             page_text = r.text.lower()
             found_patterns = []
             for pattern in error_patterns:
@@ -1231,7 +1234,7 @@ if args.api_fuzzer:
             if found_patterns:
                 return f"{Fore.RED}{url} - {', '.join(found_patterns)}"
 
-            #  --> Check beautifulsoup for error patterns
+            # Check beautifulsoup for error patterns
             soup = BeautifulSoup(r.text, "html.parser")
             if soup.find("title") and "404" in soup.find("title").text.lower():
                 pass
@@ -1538,7 +1541,7 @@ if args.print_all_ips:
 
 
 if args.xss_scan:
-    #  --> Define rate limit: 5 calls per second
+    # Define rate limit: 5 calls per second
     CALLS = 5
     RATE_LIMIT = 1
 
@@ -1552,12 +1555,12 @@ if args.xss_scan:
 
     def encode_payload(payload):
         encodings = [
-            lambda x: x,  # -->  No encoding
-            lambda x: quote_plus(x),  # -->  URL encoding
-            lambda x: html.escape(x),  #  --> HTML entity encoding
-            lambda x: ''.join(f'%{ord(c):02X}' for c in x),  # -->  Full URL encoding
-            lambda x: ''.join(f'&#x{ord(c):02X};' for c in x),  # --> Hex entity encoding
-            lambda x: ''.join(f'\\u{ord(c):04X}' for c in x),  # --> Unicode escape
+            lambda x: x,  # No encoding
+            lambda x: quote_plus(x),  # URL encoding
+            lambda x: html.escape(x),  # HTML entity encoding
+            lambda x: ''.join(f'%{ord(c):02X}' for c in x),  # Full URL encoding
+            lambda x: ''.join(f'&#x{ord(c):02X};' for c in x),  # Hex entity encoding
+            lambda x: ''.join(f'\\u{ord(c):04X}' for c in x),  # Unicode escape
         ]
         return random.choice(encodings)(payload)
 
@@ -1608,7 +1611,7 @@ if args.xss_scan:
                 except requests.RequestException as e:
                     print(f"{Fore.YELLOW}Error scanning {test_url}: {str(e)}{Fore.RESET}")
                 finally:
-                    bar()  # --> Increment the progress bar for each payload scanned
+                    bar()  # Increment the progress bar for each payload scanned
         
         return vulnerabilities
 
@@ -1621,7 +1624,7 @@ if args.xss_scan:
                 payloads = [x.strip() for x in f.readlines()]
             
             total_payloads = 0
-            # --> Calculate total payloads based on number of URLs and number of payloads per URL
+            # Calculate total payloads based on number of URLs and number of payloads per URL
             for url in urls:
                 parsed_url = urlparse(url)
                 params = parse_qs(parsed_url.query)
@@ -1666,18 +1669,18 @@ if args.xss_scan:
 if args.sqli_scan:
     init(autoreset=True)
 
-    # --> Rate Limiting Configuration
-    RATE_LIMIT = 5  # -->  Maximum number of requests per second
-    REQUEST_INTERVAL = 1 / RATE_LIMIT  #  --> Interval between requests in seconds
+    # Rate Limiting Configuration
+    RATE_LIMIT = 5  # Maximum number of requests per second
+    REQUEST_INTERVAL = 1 / RATE_LIMIT  # Interval between requests in seconds
 
     def generate_random_string(length=8):
         return ''.join(random.choices(string.ascii_letters + string.digits, k=length))
 
     def encode_payload(payload):
         encodings = [
-            lambda x: x,  #  --> No encoding
-            lambda x: quote_plus(x),  # --> URL encoding
-            lambda x: ''.join(f'%{ord(c):02X}' for c in x),  # -->  Full URL encoding
+            lambda x: x,  # No encoding
+            lambda x: quote_plus(x),  # URL encoding
+            lambda x: ''.join(f'%{ord(c):02X}' for c in x),  # Full URL encoding
         ]
         return random.choice(encodings)(payload)
 
@@ -1696,7 +1699,7 @@ if args.sqli_scan:
         params = parse_qs(parsed_url.query)
         
         for param in params:
-            # --> Error-based SQLi
+            # Error-based SQLi
             error_payloads = [
                 "' OR '1'='1",
                 "' OR '1'='1' --",
@@ -1742,15 +1745,15 @@ if args.sqli_scan:
                                 "type": "Error-based SQLi"
                             }
                             print_queue.put(vulnerability)
-                            bar()  # --> Increment progress bar upon finding a vulnerability
-                            return  # --> Exit after finding a vulnerability
+                            bar()  # Increment progress bar upon finding a vulnerability
+                            return  # Exit after finding a vulnerability
                     
                 except requests.RequestException as e:
                     print_queue.put(f"{Fore.YELLOW}Error scanning {test_url}: {str(e)}{Fore.RESET}")
                 finally:
-                    bar()  # --> Increment the progress bar for each payload scanned
+                    bar()  # Increment the progress bar for each payload scanned
             
-            # --> Boolean-based blind SQLi
+            # Boolean-based blind SQLi
             rate_limiter.acquire()
             original_params = params.copy()
             original_params[param] = ["1 AND 1=1"]
@@ -1777,13 +1780,13 @@ if args.sqli_scan:
                         "type": "Boolean-based blind SQLi"
                     }
                     print_queue.put(vulnerability)
-                    bar()  # --> Increment progress bar upon finding a vulnerability
+                    bar()  # Increment progress bar upon finding a vulnerability
             except requests.RequestException as e:
                 print_queue.put(f"{Fore.YELLOW}Error during boolean-based test for {url}: {str(e)}{Fore.RESET}")
             finally:
-                bar()  # --> Increment the progress bar even if vulnerability is found
+                bar()  # Increment the progress bar even if vulnerability is found
                 
-            # --> Time-based blind SQLi
+            # Time-based blind SQLi
             rate_limiter.acquire()
             time_payload = "1' AND (SELECT * FROM (SELECT(SLEEP(5)))a) AND '1'='1"
             encoded_time_payload = encode_payload(time_payload)
@@ -1813,7 +1816,7 @@ if args.sqli_scan:
             except requests.RequestException as e:
                 print_queue.put(f"{Fore.YELLOW}Error during time-based test for {url}: {str(e)}{Fore.RESET}")
             finally:
-                bar()  #  --> Increment the progress bar for each payload scanned
+                bar()  # Increment the progress bar for each payload scanned
 
     def print_worker(print_queue):
         while True:
@@ -1845,12 +1848,12 @@ if args.sqli_scan:
             return []
 
         total_payloads = 0
-        # --> Calculate total payloads based on number of URLs and number of payloads per URL
+        # Calculate total payloads based on number of URLs and number of payloads per URL
         for url in urls:
             parsed_url = urlparse(url)
             params = parse_qs(parsed_url.query)
             if params:
-                # -->  Error-based payloads
+                # Error-based payloads
                 error_payloads = [
                     "' OR '1'='1",
                     "' OR '1'='1' --",
@@ -1862,10 +1865,10 @@ if args.sqli_scan:
                 ]
                 total_payloads += len(params) * len(error_payloads)
                 
-                # --> Boolean-based payloads (1 per parameter)
+                # Boolean-based payloads (1 per parameter)
                 total_payloads += len(params) * 1
                 
-                # --> Time-based payloads (1 per parameter)
+                # Time-based payloads (1 per parameter)
                 total_payloads += len(params) * 1
 
         if total_payloads == 0:
@@ -1873,7 +1876,7 @@ if args.sqli_scan:
             return []
 
         all_vulnerabilities = []
-        # --> Initialize the rate limiter
+        # Initialize the rate limiter
         rate_limiter = threading.Semaphore(RATE_LIMIT)
 
         def release_rate_limiter():
@@ -1881,7 +1884,7 @@ if args.sqli_scan:
                 time.sleep(REQUEST_INTERVAL)
                 rate_limiter.release()
 
-        # --> Start a thread to release the semaphore at the defined rate
+        # Start a thread to release the semaphore at the defined rate
         rate_thread = threading.Thread(target=release_rate_limiter, daemon=True)
         rate_thread.start()
 
@@ -2005,13 +2008,13 @@ if args.javascript_scan:
             response = requests.get(url, timeout=10)
             soup = BeautifulSoup(response.text, 'html.parser')
             
-            # --> Find <script> tags with src attribute
+            # Find <script> tags with src attribute
             for script in soup.find_all('script', src=True):
                 script_url = urljoin(url, script['src'])
                 if is_valid_url(script_url):
                     js_files.add(script_url)
             
-            # --> Find JavaScript files in <link> tags
+            # Find JavaScript files in <link> tags
             for link in soup.find_all('link', rel='stylesheet'):
                 if 'href' in link.attrs:
                     css_url = urljoin(url, link['href'])
@@ -2023,7 +2026,7 @@ if args.javascript_scan:
                             if is_valid_url(full_js_url):
                                 js_files.add(full_js_url)
             
-            # --> Find JavaScript files mentioned in inline scripts
+            # Find JavaScript files mentioned in inline scripts
             for script in soup.find_all('script'):
                 if script.string:
                     js_urls = re.findall(r'[\'"]([^\'"]*\.js)[\'"]', script.string)
@@ -2043,7 +2046,7 @@ if args.javascript_scan:
             content = response.text
             size = len(content)
             
-            # --> Analysis patterns
+            # Analysis patterns
             interesting_patterns = {
                 'API Keys': r'(?i)(?:api[_-]?key|apikey)["\s:=]+(["\'][a-zA-Z0-9_\-]{20,}["\'])',
                 'Passwords': r'(?i)(?:password|passwd|pwd)["\s:=]+(["\'][^"\']{8,}["\'])',
@@ -2082,7 +2085,7 @@ if args.javascript_scan:
                     print("Potential sensitive information:")
                     for name, matches in findings.items():
                         print(f"  - {name}:")
-                        for match in matches[:5]:  # --> Limit to first 5 matches to avoid overwhelming output
+                        for match in matches[:5]:  # Limit to first 5 matches to avoid overwhelming output
                             print(f"    {match}")
                         if len(matches) > 5:
                             print(f"    ... and {len(matches) - 5} more")
@@ -2116,7 +2119,7 @@ if args.javascript_endpoints:
         return None
 
     def find_endpoints(js_content):
-        # --> This regex pattern looks for common endpoint patterns in JavaScript
+        # This regex pattern looks for common endpoint patterns in JavaScript
         endpoint_pattern = r'(?:"|\'|\`)(/(?:api/)?[\w-]+(?:/[\w-]+)*(?:\.\w+)?)'
         endpoints = set(re.findall(endpoint_pattern, js_content))
         return endpoints
@@ -2468,13 +2471,13 @@ if args.openredirect:
                 location = response.headers.get('Location', '')
                 if location:
                     parsed_location = urllib.parse.urlparse(location)
-                    # --> If 'location' is a relative URL, resolve it against the original URL
+                    # If 'location' is a relative URL, resolve it against the original URL
                     if not parsed_location.netloc:
                         location = urllib.parse.urljoin(full_url, location)
                         parsed_location = urllib.parse.urlparse(location)
-                    # --> Now compare the netloc of the location with the original netloc
+                    # Now compare the netloc of the location with the original netloc
                     if parsed_location.netloc and parsed_location.netloc != original_netloc:
-                        # --> Check if the TEST_DOMAIN is in the netloc
+                        # Check if the TEST_DOMAIN is in the netloc
                         if TEST_DOMAIN in parsed_location.netloc:
                             print(f"{RED}VULNERABLE: Redirects to {location}{RESET}")
                             return (full_url, location)
@@ -2618,7 +2621,7 @@ if args.subdomaintakeover:
             if response.status == 404:
                 print(f"[Potential Takeover] {subdomain} - 404 Not Found")
                 potential_takeover.add(subdomain)
-                # --> Save potential takeovers to a file for further analysis
+                # Save potential takeovers to a file for further analysis
                 with open('potential_takeover.txt', 'w') as f:
                     for sub in potential_takeover:
                         f.write(f"{sub}\n")
@@ -2635,9 +2638,9 @@ if args.subdomaintakeover:
             for rdata in answers:
                 target = str(rdata.target).rstrip('.')
                 print(f"{Fore.MAGENTA}[CNAME] {Fore.CYAN}{subdomain}{Style.RESET_ALL} points to {Fore.GREEN}{target}{Style.RESET_ALL}")
-                check_whois(target)  # --> Check WHOIS for the CNAME target
+                check_whois(target)  # Check WHOIS for the CNAME target
         except (dns.resolver.NoAnswer, dns.resolver.NXDOMAIN):
-            pass  # --> No CNAME record found
+            pass  # No CNAME record found
         except Exception as e:
             print(f"{Fore.RED}[DNS Error] {Fore.CYAN}{subdomain} - {Fore.RED}{e}{Style.RESET_ALL}")
 
@@ -2834,16 +2837,16 @@ if args.autorecon:
         print(f"{Fore.MAGENTA}Searching Shodan for {Fore.CYAN}{target}{Style.RESET_ALL}...")
         results = []
         try:
-            # --> Perform the Shodan search
+            # Perform the Shodan search
             results = shodan_api.search(target)
             print(f"Found {results['total']} results for {target}.")
             
-            # --> Extract subdomains, port numbers, and services
+            # Extract subdomains, port numbers, and services
             extracted_data = []
             for match in results['matches']:
                 ip = match['ip_str']
                 port = match['port']
-                services = match.get('product', 'Unknown')  # --> Get the service/product name
+                services = match.get('product', 'Unknown')  # Get the service/product name
                 extracted_data.append(f"IP: {ip}, Port: {port}, Service: {services}")
             
             return extracted_data
@@ -2861,19 +2864,19 @@ if args.autorecon:
             with open('site_links.txt', 'w') as f:
                 for link in site_links:
                     f.write(f"{link}\n")
-            bar()  # --> Update after crawling site
+            bar()  # Update after crawling site
 
-            all_links = site_links  # --> Only site links now
+            all_links = site_links  # Only site links now
 
-            # -->  Extract JavaScript files, passing the 
+            # Extract JavaScript files, passing the 
             js_files = await extract_js_files(all_links, target)
             print(f"{Fore.MAGENTA}Found {Fore.CYAN}{len(js_files)}{Style.RESET_ALL} JavaScript files.")
             with open('js_files.txt', 'w') as f:
                 for js_file in js_files:
                     f.write(f"{js_file}\n")
-            bar()  # --> Update after extracting JS files
+            bar()  # Update after extracting JS files
 
-            # --> Wayback urls 
+            #Wayback urls 
             waybackurls = await waybackpy(target)
             with open('waybackurls.txt', 'w') as f:
                 f.write(f"{waybackurls}\n")
@@ -2881,9 +2884,9 @@ if args.autorecon:
             with open('waybackurls.txt', 'r') as f:
                 waybackurls_lines = [line.strip() for line in f if line.strip()]
                 print(f"{Fore.MAGENTA}Found {Fore.CYAN}{len(waybackurls_lines)}{Style.RESET_ALL} waybackurls.")
-            bar()  # --> Update after waybackurls
+            bar()  # Update after waybackurls
 
-            # --> Naabu portscan
+            #Naabu portscan
             ports = await portscan(target)
             with open('ports.txt', 'w') as f:
                 f.write(f"{ports}\n")
@@ -2896,9 +2899,9 @@ if args.autorecon:
                     numbers.extend(found_numbers)     
                 print(f"{Fore.MAGENTA}Found {Fore.CYAN}{len(ports_lines)}{Style.RESET_ALL} Open Ports.")
                 print(f"{Fore.MAGENTA}Open Ports: {Fore.CYAN}{', '.join(map(str, numbers))}{Style.RESET_ALL}")
-            bar()  # --> Update after ports scan
+            bar()  # Update after ports scan
 
-            # --> Get headers
+            #Get headers
             getheaders = await headers_info(target)
             target2 = target.replace("https://", "").replace("http://", "").replace("www.", "")
             with open(f"headers.txt", "w") as f:
@@ -2906,12 +2909,12 @@ if args.autorecon:
                     f.write(f"{header}\n")
             bar()
 
-            # --> Server info
+            #Server info
             serverinfo = await server_info(target)
             print(f"{Fore.MAGENTA}Server: {Fore.CYAN}{serverinfo}{Style.RESET_ALL}")
             bar()
 
-            # --> Dnsscan
+            #Dnsscan
             dns = await dnsscan(target)
             with open('dnsscan.json', 'w') as f:
                 f.write(f"{dns}\n")
@@ -2919,15 +2922,15 @@ if args.autorecon:
             dns_output = scan(f"python3 dnsparser.py -dns dnsscan.json")
             with open('dns_output.txt', 'w') as f:
                 f.write(f"{dns_output}\n")
-            bar()  # --> Update after dnsscan
+            bar()  # Update after dnsscan
 
-            # --> Techdetect
+            #Techdetect
             tech = await techdetect(target)
             print(f"{Fore.MAGENTA}Tech Detect: {Fore.CYAN}{tech}{Style.RESET_ALL}")
             with open('techdetect.txt', 'w') as f:
                 for techs in tech:
                     f.write(f"{techs}\n")
-            bar()  # --> Update after techdetect
+            bar()  # Update after techdetect
 
             parameters = extract_parameters(all_links)
             links_params = set()
@@ -2936,18 +2939,18 @@ if args.autorecon:
             with open('links_params.txt', 'w') as f:
                 for link in links_params:
                     f.write(f"{link}\n")
-            bar()  # --> Update after extracting parameters
+            bar()  # Update after extracting parameters
 
-            # -->  Print parameters for each link
+            # Print parameters for each link
             for link in links_params:
                 print(f"{Fore.MAGENTA}Found {Fore.CYAN}{len(links_params)}{Style.RESET_ALL} Links with Parameters")
 
-            # --> Perform Shodan search and save results to a file
+            # Perform Shodan search and save results to a file
             shodan_results = shodan_search(target, shodankey)
             with open('shodan_results.txt', 'w') as f:
                 for result in shodan_results:
                     f.write(f"{result}\n")
-            bar()  # --> Update after Shodan search
+            bar()  # Update after Shodan search
 
             ssl_scan = await ssl_vuln_scan(target)  
             print(f"{Fore.MAGENTA}TLS/SSL Scan: {Fore.CYAN}ssl_info.txt{Style.RESET_ALL}")
@@ -2985,5 +2988,227 @@ if args.heapdump:
     analyzer = HeapdumpAnalyzer()
     analyzer.analyze(args.heapdump, args.output_dir)
 
-if args.heapdump_scan:
-    commands(f"python3 modules/heapdump_scan.py --file {args.heapdump_scan}")
+if args.heapdump_file:
+    commands(f"python3 modules/heapdump_scan.py --file {args.heapdump_file}")
+
+if args.heapdump_target:
+    commands(f"python3 modules/heapdump_scan.py --url {args.heapdump_target} --timeout 10")
+
+if args.aws_scan:
+    init(autoreset=True)
+    
+    def check_aws_services(domain):
+        aws_endpoints = {
+            'S3': [f'http://{domain}.s3.amazonaws.com', f'https://{domain}.s3.amazonaws.com'],
+            'CloudFront': [f'https://{domain}.cloudfront.net'],
+            'ELB': [f'{domain}.elb.amazonaws.com', f'{domain}.elb.us-east-1.amazonaws.com'],
+            'API Gateway': [f'https://{domain}.execute-api.us-east-1.amazonaws.com'],
+            'Lambda': [f'https://{domain}.lambda-url.us-east-1.amazonaws.com'],
+            'ECR': [f'https://{domain}.dkr.ecr.us-east-1.amazonaws.com'],
+            'ECS': [f'https://{domain}.ecs.us-east-1.amazonaws.com'],
+        }
+        
+        findings = []
+        with alive_bar(len(aws_endpoints), title='Scanning AWS Services') as bar:
+            for service, urls in aws_endpoints.items():
+                for url in urls:
+                    try:
+                        response = requests.get(url, timeout=10, verify=False)
+                        if response.status_code != 404:
+                            findings.append({
+                                'service': service,
+                                'url': url,
+                                'status': response.status_code,
+                                'headers': dict(response.headers)
+                            })
+                    except requests.RequestException:
+                        pass
+                bar()
+        return findings
+
+    def check_iam_exposure(domain):
+        iam_endpoints = [
+            f'https://iam.{domain}',
+            f'https://sts.{domain}',
+            f'https://signin.{domain}'
+        ]
+        findings = []
+        
+        print(f"\n{Fore.CYAN}Checking for exposed IAM endpoints...{Style.RESET_ALL}")
+        for endpoint in iam_endpoints:
+            try:
+                response = requests.get(endpoint, timeout=5, verify=False)
+                if response.status_code != 404:
+                    findings.append({
+                        'endpoint': endpoint,
+                        'status': response.status_code
+                    })
+            except requests.RequestException:
+                continue
+        return findings
+
+    target = args.aws_scan
+    print(f"\n{Fore.MAGENTA}Starting AWS Security Scan for {Fore.CYAN}{target}{Style.RESET_ALL}")
+    
+    # Scan AWS services
+    aws_findings = check_aws_services(target)
+    if aws_findings:
+        print(f"\n{Fore.RED}Found exposed AWS services:{Style.RESET_ALL}")
+        for finding in aws_findings:
+            print(f"\nService: {Fore.YELLOW}{finding['service']}{Style.RESET_ALL}")
+            print(f"URL: {Fore.CYAN}{finding['url']}{Style.RESET_ALL}")
+            print(f"Status: {finding['status']}")
+            
+    # Check IAM exposure
+    iam_findings = check_iam_exposure(target)
+    if iam_findings:
+        print(f"\n{Fore.RED}Found exposed IAM endpoints:{Style.RESET_ALL}")
+        for finding in iam_findings:
+            print(f"Endpoint: {Fore.CYAN}{finding['endpoint']}{Style.RESET_ALL}")
+            print(f"Status: {finding['status']}")
+            
+    # Save results
+    timestamp = datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
+    with open(f'aws_scan_{timestamp}.json', 'w') as f:
+        json.dump({
+            'aws_services': aws_findings,
+            'iam_endpoints': iam_findings
+        }, f, indent=4)
+    print(f"\n{Fore.GREEN}Results saved to aws_scan_{timestamp}.json{Style.RESET_ALL}")
+
+if args.azure_scan:
+    init(autoreset=True)
+    
+    def check_azure_services(domain):
+        azure_endpoints = {
+            'Storage': [f'https://{domain}.blob.core.windows.net',
+                       f'https://{domain}.file.core.windows.net',
+                       f'https://{domain}.queue.core.windows.net'],
+            'WebApps': [f'https://{domain}.azurewebsites.net'],
+            'Functions': [f'https://{domain}.azurewebsites.net/api'],
+            'KeyVault': [f'https://{domain}.vault.azure.net'],
+            'Database': [f'https://{domain}.database.windows.net'],
+            'ServiceBus': [f'https://{domain}.servicebus.windows.net']
+        }
+        
+        findings = []
+        with alive_bar(len(azure_endpoints), title='Scanning Azure Services') as bar:
+            for service, urls in azure_endpoints.items():
+                for url in urls:
+                    try:
+                        response = requests.get(url, timeout=10, verify=False)
+                        if response.status_code != 404:
+                            findings.append({
+                                'service': service,
+                                'url': url,
+                                'status': response.status_code,
+                                'headers': dict(response.headers)
+                            })
+                    except requests.RequestException:
+                        pass
+                bar()
+        return findings
+
+    def check_management_endpoints(domain):
+        mgmt_endpoints = [
+            f'https://management.{domain}',
+            f'https://portal.{domain}',
+            f'https://scm.{domain}'
+        ]
+        findings = []
+        
+        print(f"\n{Fore.CYAN}Checking for exposed management endpoints...{Style.RESET_ALL}")
+        for endpoint in mgmt_endpoints:
+            try:
+                response = requests.get(endpoint, timeout=5, verify=False)
+                if response.status_code != 404:
+                    findings.append({
+                        'endpoint': endpoint,
+                        'status': response.status_code
+                    })
+            except requests.RequestException:
+                continue
+        return findings
+
+    target = args.azure_scan
+    print(f"\n{Fore.MAGENTA}Starting Azure Security Scan for {Fore.CYAN}{target}{Style.RESET_ALL}")
+    
+    # Scan Azure services
+    azure_findings = check_azure_services(target)
+    if azure_findings:
+        print(f"\n{Fore.RED}Found exposed Azure services:{Style.RESET_ALL}")
+        for finding in azure_findings:
+            print(f"\nService: {Fore.YELLOW}{finding['service']}{Style.RESET_ALL}")
+            print(f"URL: {Fore.CYAN}{finding['url']}{Style.RESET_ALL}")
+            print(f"Status: {finding['status']}")
+            
+    # Check management endpoints
+    mgmt_findings = check_management_endpoints(target)
+    if mgmt_findings:
+        print(f"\n{Fore.RED}Found exposed management endpoints:{Style.RESET_ALL}")
+        for finding in mgmt_findings:
+            print(f"Endpoint: {Fore.CYAN}{finding['endpoint']}{Style.RESET_ALL}")
+            print(f"Status: {finding['status']}")
+            
+    # Save results
+    timestamp = datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
+    with open(f'azure_scan_{timestamp}.json', 'w') as f:
+        json.dump({
+            'azure_services': azure_findings,
+            'management_endpoints': mgmt_findings
+        }, f, indent=4)
+    print(f"\n{Fore.GREEN}Results saved to azure_scan_{timestamp}.json{Style.RESET_ALL}")
+
+# Add implementation
+if args.zone_transfer:
+    print(f"{Fore.MAGENTA}Testing DNS Zone Transfer for {Fore.CYAN}{args.zone_transfer}{Style.RESET_ALL}\n")
+    
+    def get_nameservers(domain):
+        try:
+            answers = dns.resolver.resolve(domain, 'NS')
+            return [str(rdata.target).rstrip('.') for rdata in answers]
+        except Exception as e:
+            print(f"{Fore.RED}Error getting nameservers: {e}{Style.RESET_ALL}")
+            return []
+
+    def test_zone_transfer(domain, nameserver):
+        try:
+            # Attempt zone transfer
+            z = dns.zone.from_xfr(dns.query.xfr(nameserver, domain))
+            names = z.nodes.keys()
+            records = []
+            
+            # Get all records
+            for n in names:
+                record = z[n].to_text(n)
+                records.append(record)
+                print(f"{Fore.GREEN}[+] {Fore.CYAN}{record}{Style.RESET_ALL}")
+            
+            # Save results if vulnerable
+            if records:
+                timestamp = datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
+                with open(f'zone_transfer_{domain}_{timestamp}.txt', 'w') as f:
+                    f.write(f"DNS Zone Transfer Results for {domain}\n")
+                    f.write(f"Nameserver: {nameserver}\n\n")
+                    for record in records:
+                        f.write(f"{record}\n")
+                print(f"\n{Fore.RED}[!] Zone Transfer VULNERABLE!{Style.RESET_ALL}")
+                print(f"{Fore.GREEN}Results saved to zone_transfer_{domain}_{timestamp}.txt{Style.RESET_ALL}")
+            
+        except Exception as e:
+            print(f"{Fore.YELLOW}[-] Zone transfer failed for {nameserver}: {e}{Style.RESET_ALL}")
+
+    domain = args.zone_transfer
+    nameservers = get_nameservers(domain)
+    
+    if nameservers:
+        print(f"{Fore.MAGENTA}Found nameservers:{Style.RESET_ALL}")
+        for ns in nameservers:
+            print(f"{Fore.CYAN}[*] {ns}{Style.RESET_ALL}")
+        
+        print(f"\n{Fore.MAGENTA}Testing zone transfer on each nameserver...{Style.RESET_ALL}\n")
+        for ns in nameservers:
+            print(f"{Fore.CYAN}Testing {ns}...{Style.RESET_ALL}")
+            test_zone_transfer(domain, ns)
+    else:
+        print(f"{Fore.RED}No nameservers found for {domain}{Style.RESET_ALL}")

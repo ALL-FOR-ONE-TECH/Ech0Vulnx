@@ -1,4 +1,3 @@
-#!/bin/python
 import re
 import json
 import binascii

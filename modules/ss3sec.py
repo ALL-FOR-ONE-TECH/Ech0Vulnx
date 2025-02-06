@@ -1,4 +1,3 @@
-#!/bin/python
 import requests
 import concurrent.futures
 from urllib.parse import urlparse

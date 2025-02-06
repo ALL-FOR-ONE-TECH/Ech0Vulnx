@@ -1,4 +1,4 @@
-#!/bin/python
+# --> modules/favicon.py
 from shodan import Shodan
 import sys
 
