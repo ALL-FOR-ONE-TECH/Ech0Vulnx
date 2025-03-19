@@ -1,230 +1,248 @@
-# DESCRIPTION
-
-Ech0Vulnx is comprehensive network scanning and vulnerability assessment tool. This tool is designed for security professionals and penetration testers to perform comprehensive reconnaissance and vulnerability assessment on target networks and web applications. It combines multiple scanning techniques and integrates various external tools to provide a wide range of information about the target.
-
-![StealthGhost](https://github.com/whoamikiddie/Ech0Vulnx/)
-##  Overview 
-
-1. It imports various libraries for network operations, web scraping, and parallel processing.
-
-2. The script defines a colorful banner and sets up command-line argument parsing for different scanning options.
-
-3. It includes multiple scanning functions for different purposes:
-   - Subdomain enumeration
-   - Technology detection
-   - DNS record scanning
-   - Web crawling and URL extraction
-   - Favicon hash calculation
-   - Host header injection testing
-   - Security header analysis
-   - Network vulnerability analysis
-   - Wayback machine URL retrieval
-   - JavaScript file discovery
-   - Broken link checking
-   - HTTP request smuggling detection
-   - IP address extraction
-   - Domain information gathering
-   - API endpoint fuzzing
-   - Shodan integration for additional recon
-   - 403 Forbidden bypass attempts
-   - Directory and file brute-forcing
-   - Local File Inclusion (LFI) scanning with Nuclei
-   - Google dorking
-   - Directory Traversal
-   - SQL Injection
-   - XSS
-   - Subdomain Takeover
-   - Web Server Detection
-   - JavaScript file scanning for sensitive info
-   - Auto Recon
-   - Port Scanning
-   - CIDR Notation Scanning
-   - Custom Headers
-   - API Fuzzing
-   - AWS S3 Bucket Enumeration
-   - JSON Web Token Scanning
-  
+# Ech0Vulnx
 
 
-4. The script uses multithreading and multiprocessing to perform scans efficiently.
+Ech0Vulnx is a powerful multi-purpose network scanner and vulnerability assessment tool built for bug bounty hunters, penetration testers, and security researchers. It supports subdomain enumeration, vulnerability detection, port scanning, cloud bucket hunting, JavaScript analysis, and much more!
 
-5. It includes options to save results to files and customize scan parameters.
+---
 
-6. The tool integrates with external tools and APIs like Shodan, Nmap, and various web-based services.
+## 🚀 Features
 
-7. It implements various techniques to bypass restrictions and discover vulnerabilities.
+- Subdomain enumeration & takeover detection
+- DNS scanning & WHOIS information
+- Port scanning with CIDR notation support
+- Vulnerability scanning (XSS, SQLi, LFI, Open Redirect, etc.)
+- JavaScript file analysis & endpoint fuzzing
+- Directory brute-forcing & parameter fuzzing
+- AWS S3, Azure, and GCP bucket enumeration
+- Shodan, Wayback, Nuclei integration
+- Customizable headers, concurrency, depth options
+- Auto Recon & multipurpose scans
 
-8. The script includes a CIDR notation scanner for port scanning across IP ranges.
+---
 
+## 📥 Installation
 
-# INSTALLATION
+### **Supported OS:**
+- ✅ Linux (Debian, Ubuntu, Kali, Parrot OS, Arch)
+- ✅ macOS
+- ✅ Windows (via WSL / Python)
+
+### **Step 1: Install System Dependencies**
+
+#### Debian/Ubuntu/Kali/Parrot:
+```bash
+sudo apt update && sudo apt upgrade -y
+sudo apt install python3 python3-pip git nmap -y
+```
+
+#### Arch Linux:
+```bash
+sudo pacman -Syu
+sudo pacman -S python python-pip git nmap
+```
+
+#### macOS:
+```bash
+brew update
+brew install python3 git nmap
+```
+
+#### Windows:
+1. Install **Python 3.x** from [python.org](https://www.python.org/downloads/).
+2. Install **Nmap** from [nmap.org](https://nmap.org/download.html).
+3. Optionally, enable **WSL** for better Linux compatibility.
+
+---
+
+### **Step 2: Clone Repository**
 
 ```bash
+git clone https://github.com/whoamikiddie/Ech0Vulnx.git
+cd Ech0Vulnx
+```
 
-git clone https://github.com/whoamikiddie/StealthGhost.git
+---
 
-cd StealthGhost
+### **Step 3: Install Python Dependencies**
 
+```bash
 pip3 install -r requirements.txt
+```
 
-chmod +x install.sh 
+---
 
+### **Step 4: Run Installation Script**
+
+```bash
+chmod +x install.sh
 ./install.sh
-
 ```
 
+---
 
-# USAGE 
 
+---
+
+## ✅ Verify Installation
+
+```bash
+python3 Ech0Vulnx.py -h
 ```
 
-usage: stealthghost.py [-h] [-sv filename.txt | -wl filename.txt] [-th 25] [-s domain.com]
+---
+
+## 📖 USAGE
+
+```
+usage: Ech0Vulnx.py [-h] [-sv filename.txt | -wl filename.txt] [-th 25] [-s domain.com]
                   [-t domain.com] [-d domains.txt] [-p domains.txt] [-r domains.txt]
-                  [-b domains.txt] [-pspider domain.com] [-w https://domain.com]
-                  [-j domain.com] [-wc https://domain.com] [-fi https://domain.com]
-                  [-fm https://domain.com] [-na https://domain.com] [-ri IP] [-rim IP]
-                  [-sc domain.com] [-ph domain.txt] [-co domains.txt] [-hh domain.com]
-                  [-sh domain.com] [-ed domain.com] [-smu domain.com] [-ips domain list]
-                  [-dinfo domain list] [-isubs domain list] [-nft domains.txt]
-                  [-n domain.com or IP] [-api domain.com] [-sho domain.com] [-fp domain.com]
-                  [-db domain.com] [-cidr IP/24] [-ps 80,443,8443] [-pai IP/24]
-                  [-xss https://example.com/page?param=value]
-                  [-sqli https://example.com/page?param=value] [-shodan KEY]
-                  [-webserver domain.com] [-javascript domain.com] [-dp 10] [-je file.txt]
-                  [-hibp password] [-pm domain.com] [-ch domain.com] [-or domain.com]
-                  [-asn AS55555] [-st subdomains.txt] [-ar domain.com] [-jwt token]
+                  ... (shortened for brevity) ...
                   [-jwt-modify token] [--s3-scan S3_SCAN] [-v] [-c CONCURRENCY] [-nl] [-gs]
                   [-e EXTENSIONS] [-x EXCLUDE] [-u] [--shodan-api SHODAN_API]
-
-options:
-  -h, --help            show this help message and exit
-  -sv, --save filename.txt
-                        save output to file
-  -wl, --wordlist filename.txt
-                        wordlist to use
-  -th, --threads 25     default 25
-  -p, --probe domains.txt
-                        probe domains.
-  -r, --redirects domains.txt
-                        links getting redirected
-  -fi, --favicon https://domain.com
-                        get favicon hashes
-  -fm, --faviconmulti https://domain.com
-                        get favicon hashes
-  -ri, --reverseip IP   reverse ip lookup
-  -rim, --reverseipmulti IP
-                        reverse ip lookup for multiple ips
-  -sc, --statuscode domain.com
-                        statuscode
-  -sh, --securityheaders domain.com
-                        scan for security headers
-  -ed, --enumeratedomain domain.com
-                        enumerate domains
-  -isubs, --importantsubdomains domain list
-                        extract interesting subdomains from a list like dev, admin, test and
-                        etc..
-  -webserver, --webserver_scan domain.com
-                        webserver scan
-  --s3-scan S3_SCAN     Scan for exposed S3 buckets
-  -v, --verbose         Increase output verbosity
-  -c, --concurrency CONCURRENCY
-                        Maximum number of concurrent requests
-  --shodan-api SHODAN_API
-                        Shodan API key for subdomain enumeration
-
-Update:
-  -u, --update          Update the script
-
-Nuclei Scans:
-  -nl, --nuclei_lfi     Find Local File Inclusion with nuclei
-
-Vulnerability:
-  -b, --brokenlinks domains.txt
-                        search for broken links
-  -ph, --pathhunt domain.txt
-                        check for directory traversal
-  -co, --corsmisconfig domains.txt
-                        cors misconfiguration
-  -hh, --hostheaderinjection domain.com
-                        host header injection
-  -smu, --smuggler domain.com
-                        enumerate domains
-  -fp, --forbiddenpass domain.com
-                        Bypass 403 forbidden
-  -xss, --xss_scan https://example.com/page?param=value
-                        scan for XSS vulnerabilities
-  -sqli, --sqli_scan https://example.com/page?param=value
-                        scan for SQLi vulnerabilities
-  -or, --openredirect domain.com
-                        open redirect
-  -st, --subdomaintakeover subdomains.txt
-                        subdomain takeover
-  -jwt, --jwt_scan token
-                        analyze JWT token for vulnerabilities
-  -jwt-modify, --jwt_modify token
-                        modify JWT token
-
-Crawlers:
-  -pspider, --paramspider domain.com
-                        extract parameters from a domain
-  -w, --waybackurls https://domain.com
-                        scan for waybackurls
-  -j domain.com         find javascript files
-  -wc, --webcrawler https://domain.com
-                        scan for urls and js files
-  -javascript, --javascript_scan domain.com
-                        scan for sensitive info in javascript files
-  -dp, --depth 10       depth of the crawl
-  -je, --javascript_endpoints file.txt
-                        extract javascript endpoints
-  -hibp, --haveibeenpwned password
-                        check if the password has been pwned
-
-Passive Recon:
-  -s domain.com         scan for subdomains
-  -t, --tech domain.com
-                        find technologies
-  -d, --dns domains.txt
-                        scan a list of domains for dns records
-  -na, --networkanalyzer https://domain.com
-                        net analyzer
-  -ips, --ipaddresses domain list
-                        get the ips from a list of domains
-  -dinfo, --domaininfo domain list
-                        get domain information like codes,server,content length
-  -sho, --shodan domain.com
-                        Recon with shodan
-  -shodan, --shodan_api KEY
-                        shodan api key
-  -gs, --google         Google Search
-
-Fuzzing:
-  -nft, --not_found domains.txt
-                        check for 404 status code
-  -api, --api_fuzzer domain.com
-                        Look for API endpoints
-  -db, --directorybrute domain.com
-                        Brute force filenames and directories
-  -pm, --param_miner domain.com
-                        param miner
-  -ch, --custom_headers domain.com
-                        custom headers
-  -asn, --automoussystemnumber AS55555
-                        asn
-  -ar, --autorecon domain.com
-                        auto recon
-  -e, --extensions EXTENSIONS
-                        Comma-separated list of file extensions to scan
-  -x, --exclude EXCLUDE
-                        Comma-separated list of status codes to exclude
-
-Port Scanning:
-  -n, --nmap domain.com or IP
-                        Scan a target with nmap
-  -cidr, --cidr_notation IP/24
-                        Scan an ip range to find assets and services
-  -ps, --ports 80,443,8443
-                        Port numbers to scan
-  -pai, --print_all_ips IP/24
-                        Print all ip
 ```
+
+**Main Options Overview:**
+
+| Option | Description |
+|-------|------------|
+| `-s`  | Scan subdomains |
+| `-d`  | Scan domains for DNS records |
+| `-fi` | Get favicon hashes |
+| `-wc` | Web crawler |
+| `-b`  | Broken links check |
+| `-co` | CORS misconfiguration scan |
+| `-hh` | Host header injection scan |
+| `-db` | Directory brute force |
+| `-ph` | Directory traversal vulnerability scan |
+| `-sqli`| SQL Injection scan |
+| `-xss` | XSS vulnerability scan |
+| `-javascript` | JavaScript file sensitive info scan |
+| `--jwt` | Analyze JWT tokens |
+| `--s3-scan` | AWS S3 bucket enumeration |
+| `--cidr` | CIDR notation port scan |
+| `-ar` | Auto recon |
+| Many more... (Full list available with `-h` flag)
+
+---
+
+## 📌 EXAMPLES
+
+Scan for subdomains and save output:
+```
+python3 Ech0Vulnx.py -s yahoo.com --save filename.txt
+```
+
+Scan subdomains + Shodan extraction:
+```
+python3 Ech0Vulnx.py -s yahoo.com --shodan API_KEY --save filename.txt
+```
+
+JavaScript file discovery:
+```
+python3 Ech0Vulnx.py -j yahoo.com --depth 4 --save jsfiles.txt -c 20
+```
+
+DNS record scan:
+```
+python3 Ech0Vulnx.py -d domains.txt
+```
+
+Favicon hash scan:
+```
+python3 Ech0Vulnx.py -fi domain.com
+```
+
+Web crawler:
+```
+python3 Ech0Vulnx.py -wc https://www.domain.com
+```
+
+Broken links scan:
+```
+python3 Ech0Vulnx.py -b https://www.domain.com
+```
+
+CORS Misconfiguration:
+```
+python3 Ech0Vulnx.py -co domains.txt
+```
+
+Host Header Injection:
+```
+python3 Ech0Vulnx.py -hh domains.txt
+```
+
+Directory brute force:
+```
+python3 Ech0Vulnx.py --directorybrute domain.com --wordlist list.txt --threads 50 -e php,txt,html -x 404,403
+```
+
+Subnet scan:
+```
+python3 Ech0Vulnx.py --cidr_notation IP/24 --ports 80,443 --threads 200
+```
+
+Directory traversal:
+```
+python3 Ech0Vulnx.py -ph domain.com?id=
+```
+
+SQL Injection:
+```
+python3 Ech0Vulnx.py -sqli domain.com?id=1
+```
+
+XSS Scan:
+```
+python3 Ech0Vulnx.py -xss domain.com?id=1
+```
+
+Sensitive JavaScript analysis:
+```
+python3 Ech0Vulnx.py -javascript domain.com
+```
+
+JWT Token scan:
+```
+python3 Ech0Vulnx.py -jwt Token
+```
+
+AWS S3 Bucket Enumeration:
+```
+python3 Ech0Vulnx.py --s3-scan bucket.com
+```
+
+Subdomain Takeover:
+```
+python3 Ech0Vulnx.py -st domains.txt --save vuln_subs.txt -c 50 
+```
+
+Auto Recon:
+```
+python3 Ech0Vulnx.py -ar domain.com
+```
+
+---
+
+## 🌐 Optional Shodan API Key
+
+Register and get your API key at:
+
+- [Shodan.io](https://account.shodan.io/register)
+
+Usage:
+```
+python3 Ech0Vulnx.py -s domain.com --shodan-api YOUR_API_KEY
+```
+
+---
+
+## 🛠️ Troubleshooting
+
+| Issue                                   | Solution                                         |
+|----------------------------------------|--------------------------------------------------|
+| Missing `requests` module              | Run: `pip3 install requests`                     |
+| Nmap/Nuclei not found                  | Install & add to PATH                           |
+| Permission denied                      | Ensure: `chmod +x install.sh` & run with `sudo`  |
+| Python version issues                  | Requires **Python 3.12.9**                          |
+
