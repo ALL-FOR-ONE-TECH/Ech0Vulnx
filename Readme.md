@@ -1,8 +1,8 @@
 # DESCRIPTION
 
-St3althGHost is comprehensive network scanning and vulnerability assessment tool. This tool is designed for security professionals and penetration testers to perform comprehensive reconnaissance and vulnerability assessment on target networks and web applications. It combines multiple scanning techniques and integrates various external tools to provide a wide range of information about the target.
+Ech0Vulnx is comprehensive network scanning and vulnerability assessment tool. This tool is designed for security professionals and penetration testers to perform comprehensive reconnaissance and vulnerability assessment on target networks and web applications. It combines multiple scanning techniques and integrates various external tools to provide a wide range of information about the target.
 
-![StealthGhost](https://github.com/whoamikiddie/StealthGhost/blob/main/image.png)
+![StealthGhost](https://github.com/whoamikiddie/Ech0Vulnx/)
 ##  Overview 
 
 1. It imports various libraries for network operations, web scraping, and parallel processing.
@@ -67,13 +67,9 @@ cd StealthGhost
 
 pip3 install -r requirements.txt
 
-sudo python3 install.py
+chmod +x install.sh 
 
-```
-# Fast Installation dependencies
-```bash
-
-sudo go run main.go 
+./install.sh
 
 ```
 
