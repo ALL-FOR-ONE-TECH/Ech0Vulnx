@@ -60,18 +60,9 @@ brew install python3 git nmap
 git clone https://github.com/whoamikiddie/Ech0Vulnx.git
 cd Ech0Vulnx
 ```
-
 ---
 
-### **Step 3: Install Python Dependencies**
-
-```bash
-pip3 install -r requirements.txt
-```
-
----
-
-### **Step 4: Run Installation Script**
+### **Step 3: Run Installation Script**
 
 ```bash
 chmod +x install.sh
