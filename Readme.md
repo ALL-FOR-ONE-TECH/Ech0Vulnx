@@ -48,7 +48,7 @@ brew install python3 git nmap
 ```
 
 #### Windows:
-1. Install **Python 3.x** from [python.org](https://www.python.org/downloads/).
+1. Install **Python 3.12.9** from [python.org](https://www.python.org/downloads/).
 2. Install **Nmap** from [nmap.org](https://nmap.org/download.html).
 3. Optionally, enable **WSL** for better Linux compatibility.
 
