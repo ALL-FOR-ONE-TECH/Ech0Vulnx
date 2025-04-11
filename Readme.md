@@ -1,58 +1,92 @@
 # Ech0Vulnx
 
+<div align="center">
+  <img src="https://raw.githubusercontent.com/whoamikiddie/Ech0Vulnx/main/assets/ech0vulnx.gif" alt="Ech0Vulnx Animation" width="600"/>
+</div>
+
+<div align="center">
+  <a href="https://github.com/whoamikiddie/Ech0Vulnx/stargazers"><img src="https://img.shields.io/github/stars/whoamikiddie/Ech0Vulnx?style=for-the-badge" alt="Stars"></a>
+  <a href="https://github.com/whoamikiddie/Ech0Vulnx/network/members"><img src="https://img.shields.io/github/forks/whoamikiddie/Ech0Vulnx?style=for-the-badge" alt="Forks"></a>
+  <a href="https://github.com/whoamikiddie/Ech0Vulnx/issues"><img src="https://img.shields.io/github/issues/whoamikiddie/Ech0Vulnx?style=for-the-badge" alt="Issues"></a>
+  <a href="https://github.com/whoamikiddie/Ech0Vulnx/blob/main/LICENSE"><img src="https://img.shields.io/github/license/whoamikiddie/Ech0Vulnx?style=for-the-badge" alt="License"></a>
+</div>
+
+<div align="center">
+  <h3>Advanced Network Scanner & Vulnerability Assessment Tool</h3>
+</div>
 
 Ech0Vulnx is a powerful multi-purpose network scanner and vulnerability assessment tool built for bug bounty hunters, penetration testers, and security researchers. It supports subdomain enumeration, vulnerability detection, port scanning, cloud bucket hunting, JavaScript analysis, and much more!
 
----
-
 ## 🚀 Features
 
-- Subdomain enumeration & takeover detection
-- DNS scanning & WHOIS information
-- Port scanning with CIDR notation support
-- Vulnerability scanning (XSS, SQLi, LFI, Open Redirect, etc.)
-- JavaScript file analysis & endpoint fuzzing
-- Directory brute-forcing & parameter fuzzing
-- AWS S3, Azure, and GCP bucket enumeration
-- Shodan, Wayback, Nuclei integration
-- Customizable headers, concurrency, depth options
-- Auto Recon & multipurpose scans
-
----
+<div align="center">
+  <table>
+    <tr>
+      <td>
+        <ul>
+          <li>Subdomain enumeration & takeover detection</li>
+          <li>DNS scanning & WHOIS information</li>
+          <li>Port scanning with CIDR notation support</li>
+          <li>Vulnerability scanning (XSS, SQLi, LFI, Open Redirect, etc.)</li>
+          <li>JavaScript file analysis & endpoint fuzzing</li>
+        </ul>
+      </td>
+      <td>
+        <ul>
+          <li>Directory brute-forcing & parameter fuzzing</li>
+          <li>AWS S3, Azure, and GCP bucket enumeration</li>
+          <li>Shodan, Wayback, Nuclei integration</li>
+          <li>Customizable headers, concurrency, depth options</li>
+          <li>Auto Recon & multipurpose scans</li>
+        </ul>
+      </td>
+    </tr>
+  </table>
+</div>
 
 ## 📥 Installation
 
 ### **Supported OS:**
-- ✅ Linux (Debian, Ubuntu, Kali, Parrot OS, Arch)
-- ✅ macOS
-- ✅ Windows (via WSL / Python)
+- Linux (Debian, Ubuntu, Kali, Parrot OS, Arch)
+- macOS
+- Windows (via WSL / Python)
 
 ### **Step 1: Install System Dependencies**
 
-#### Debian/Ubuntu/Kali/Parrot:
+<details>
+<summary><b>Debian/Ubuntu/Kali/Parrot</b></summary>
+
 ```bash
 sudo apt update && sudo apt upgrade -y
 sudo apt install python3 python3-pip git nmap -y
 ```
+</details>
 
-#### Arch Linux:
+<details>
+<summary><b>Arch Linux</b></summary>
+
 ```bash
 sudo pacman -Syu
 sudo pacman -S python python-pip git nmap
 ```
+</details>
 
-#### macOS:
+<details>
+<summary><b>macOS</b></summary>
+
 ```bash
 brew update
 brew install python3 git nmap
 ```
+</details>
 
-#### Windows:
+<details>
+<summary><b>Windows</b></summary>
+
 1. Install **Python 3.12.9** from [python.org](https://www.python.org/downloads/).
 2. Install **Nmap** from [nmap.org](https://nmap.org/download.html).
 3. Optionally, enable **WSL** for better Linux compatibility.
-
----
+</details>
 
 ### **Step 2: Clone Repository**
 
@@ -60,7 +94,6 @@ brew install python3 git nmap
 git clone https://github.com/whoamikiddie/Ech0Vulnx.git
 cd Ech0Vulnx
 ```
----
 
 ### **Step 3: Run Installation Script**
 
@@ -69,22 +102,19 @@ chmod +x install.sh
 ./install.sh
 ```
 
----
-
-
----
-
 ## ✅ Verify Installation
 
 ```bash
 python3 Ech0Vulnx.py -h
 ```
 
----
+## 📖 Usage
 
-## 📖 USAGE
+<div align="center">
+  <img src="https://raw.githubusercontent.com/whoamikiddie/Ech0Vulnx/main/assets/usage.png" alt="Usage Example"/>
+</div>
 
-```
+```bash
 usage: Ech0Vulnx.py [-h] [-sv filename.txt | -wl filename.txt] [-th 25]
                     [-s domain.com] [-d domains.txt] [-p domains.txt]
                     [-r domains.txt] [-b domains.txt] [-pspider domain.com]
@@ -117,152 +147,254 @@ usage: Ech0Vulnx.py [-h] [-sv filename.txt | -wl filename.txt] [-th 25]
                     [--brute-user-pass domain.com]
                     [--username_wordlist domain.com]
                     [--password_wordlist domain.com]
-
-
 ```
 
-**Main Options Overview:**
+### **Main Options Overview:**
 
-| Option | Description |
-|-------|------------|
-| `-s`  | Scan subdomains |
-| `-d`  | Scan domains for DNS records |
-| `-fi` | Get favicon hashes |
-| `-wc` | Web crawler |
-| `-b`  | Broken links check |
-| `-co` | CORS misconfiguration scan |
-| `-hh` | Host header injection scan |
-| `-db` | Directory brute force |
-| `-ph` | Directory traversal vulnerability scan |
-| `-sqli`| SQL Injection scan |
-| `-xss` | XSS vulnerability scan |
-| `-javascript` | JavaScript file sensitive info scan |
-| `--jwt` | Analyze JWT tokens |
-| `--s3-scan` | AWS S3 bucket enumeration |
-| `--cidr` | CIDR notation port scan |
-| `-ar` | Auto recon |
-| Many more... (Full list available with `-h` flag)
+<div align="center">
+  <table>
+    <tr>
+      <th>Option</th>
+      <th>Description</th>
+    </tr>
+    <tr>
+      <td><code>-s</code></td>
+      <td>Scan subdomains</td>
+    </tr>
+    <tr>
+      <td><code>-d</code></td>
+      <td>Scan domains for DNS records</td>
+    </tr>
+    <tr>
+      <td><code>-fi</code></td>
+      <td>Get favicon hashes</td>
+    </tr>
+    <tr>
+      <td><code>-wc</code></td>
+      <td>Web crawler</td>
+    </tr>
+    <tr>
+      <td><code>-b</code></td>
+      <td>Broken links check</td>
+    </tr>
+    <tr>
+      <td><code>-co</code></td>
+      <td>CORS misconfiguration scan</td>
+    </tr>
+    <tr>
+      <td><code>-hh</code></td>
+      <td>Host header injection scan</td>
+    </tr>
+    <tr>
+      <td><code>-db</code></td>
+      <td>Directory brute force</td>
+    </tr>
+    <tr>
+      <td><code>-ph</code></td>
+      <td>Directory traversal vulnerability scan</td>
+    </tr>
+    <tr>
+      <td><code>-sqli</code></td>
+      <td>SQL Injection scan</td>
+    </tr>
+    <tr>
+      <td><code>-xss</code></td>
+      <td>XSS vulnerability scan</td>
+    </tr>
+    <tr>
+      <td><code>-javascript</code></td>
+      <td>JavaScript file sensitive info scan</td>
+    </tr>
+    <tr>
+      <td><code>--jwt</code></td>
+      <td>Analyze JWT tokens</td>
+    </tr>
+    <tr>
+      <td><code>--s3-scan</code></td>
+      <td>AWS S3 bucket enumeration</td>
+    </tr>
+    <tr>
+      <td><code>--cidr</code></td>
+      <td>CIDR notation port scan</td>
+    </tr>
+    <tr>
+      <td><code>-ar</code></td>
+      <td>Auto recon</td>
+    </tr>
+  </table>
+</div>
 
----
+## 📌 Examples
 
-## 📌 EXAMPLES
+<details>
+<summary><b>Subdomain Scanning</b></summary>
 
-Scan for subdomains and save output:
-```
+```bash
 python3 Ech0Vulnx.py -s yahoo.com --save filename.txt
 ```
+</details>
 
-Scan subdomains + Shodan extraction:
-```
+<details>
+<summary><b>Shodan Integration</b></summary>
+
+```bash
 python3 Ech0Vulnx.py -s yahoo.com --shodan API_KEY --save filename.txt
 ```
+</details>
 
-JavaScript file discovery:
-```
+<details>
+<summary><b>JavaScript Analysis</b></summary>
+
+```bash
 python3 Ech0Vulnx.py -j yahoo.com --depth 4 --save jsfiles.txt -c 20
 ```
+</details>
 
-DNS record scan:
-```
+<details>
+<summary><b>DNS Scanning</b></summary>
+
+```bash
 python3 Ech0Vulnx.py -d domains.txt
 ```
+</details>
 
-Favicon hash scan:
-```
+<details>
+<summary><b>Favicon Analysis</b></summary>
+
+```bash
 python3 Ech0Vulnx.py -fi domain.com
 ```
+</details>
 
-Web crawler:
-```
+<details>
+<summary><b>Web Crawling</b></summary>
+
+```bash
 python3 Ech0Vulnx.py -wc https://www.domain.com
 ```
+</details>
 
-Broken links scan:
-```
+<details>
+<summary><b>Broken Links Check</b></summary>
+
+```bash
 python3 Ech0Vulnx.py -b https://www.domain.com
 ```
+</details>
 
-CORS Misconfiguration:
-```
+<details>
+<summary><b>CORS Testing</b></summary>
+
+```bash
 python3 Ech0Vulnx.py -co domains.txt
 ```
+</details>
 
-Host Header Injection:
-```
+<details>
+<summary><b>Host Header Injection</b></summary>
+
+```bash
 python3 Ech0Vulnx.py -hh domains.txt
 ```
+</details>
 
-Directory brute force:
-```
+<details>
+<summary><b>Directory Brute Force</b></summary>
+
+```bash
 python3 Ech0Vulnx.py --directorybrute domain.com --wordlist list.txt --threads 50 -e php,txt,html -x 404,403
 ```
+</details>
 
-Subnet scan:
-```
+<details>
+<summary><b>Subnet Scanning</b></summary>
+
+```bash
 python3 Ech0Vulnx.py --cidr_notation IP/24 --ports 80,443 --threads 200
 ```
+</details>
 
-Directory traversal:
-```
+<details>
+<summary><b>Directory Traversal</b></summary>
+
+```bash
 python3 Ech0Vulnx.py -ph domain.com?id=
 ```
+</details>
 
-SQL Injection:
-```
+<details>
+<summary><b>SQL Injection</b></summary>
+
+```bash
 python3 Ech0Vulnx.py -sqli domain.com?id=1
 ```
+</details>
 
-XSS Scan:
-```
+<details>
+<summary><b>XSS Scanning</b></summary>
+
+```bash
 python3 Ech0Vulnx.py -xss domain.com?id=1
 ```
+</details>
 
-Sensitive JavaScript analysis:
-```
+<details>
+<summary><b>JavaScript Analysis</b></summary>
+
+```bash
 python3 Ech0Vulnx.py -javascript domain.com
 ```
+</details>
 
-JWT Token scan:
-```
+<details>
+<summary><b>JWT Analysis</b></summary>
+
+```bash
 python3 Ech0Vulnx.py -jwt Token
 ```
+</details>
 
-AWS S3 Bucket Enumeration:
-```
+<details>
+<summary><b>AWS S3 Bucket Enumeration</b></summary>
+
+```bash
 python3 Ech0Vulnx.py --s3-scan bucket.com
 ```
+</details>
 
-Subdomain Takeover:
-```
+<details>
+<summary><b>Subdomain Takeover</b></summary>
+
+```bash
 python3 Ech0Vulnx.py -st domains.txt --save vuln_subs.txt -c 50 
 ```
+</details>
 
-Auto Recon:
-```
+<details>
+<summary><b>Auto Recon</b></summary>
+
+```bash
 python3 Ech0Vulnx.py -ar domain.com
 ```
-
----
+</details>
 
 ## 🌐 Optional Shodan API Key
 
-Register and get your API key at:
+Register and get your API key at: [Shodan.io](https://www.shodan.io/)
 
-- [Shodan.io](https://account.shodan.io/register)
+## 📝 License
 
-Usage:
-```
-python3 Ech0Vulnx.py -s domain.com --shodan-api YOUR_API_KEY
-```
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
 
----
+## 🤝 Contributing
 
-## 🛠️ Troubleshooting
+Contributions are welcome! Please feel free to submit a Pull Request.
 
-| Issue                                   | Solution                                         |
-|----------------------------------------|--------------------------------------------------|
-| Missing `requests` module              | Run: `pip3 install requests`                     |
-| Nmap/Nuclei not found                  | Install & add to PATH                           |
-| Permission denied                      | Ensure: `chmod +x install.sh` & run with `sudo`  |
-| Python version issues                  | Requires **Python 3.12.9**                          |
+## ⭐ Support
+
+If you find this tool useful, please consider giving it a ⭐ on GitHub!
+
+<div align="center">
+  <img src="https://raw.githubusercontent.com/whoamikiddie/Ech0Vulnx/main/assets/ech0vulnx-footer.png" alt="Ech0Vulnx Footer" width="600"/>
+</div>
 
