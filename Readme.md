@@ -1,14 +1,14 @@
 # Ech0Vulnx
 
 <div align="center">
-  <img src="https://raw.githubusercontent.com/whoamikiddie/Ech0Vulnx/main/assets/ech0vulnx.gif" alt="Ech0Vulnx Animation" width="600"/>
+  <img src="https://raw.githubusercontent.com/ALL-FOR-ONE-TECH/Ech0Vulnx/main/assets/ech0vulnx.gif" alt="Ech0Vulnx Animation" width="600"/>
 </div>
 
 <div align="center">
-  <a href="https://github.com/whoamikiddie/Ech0Vulnx/stargazers"><img src="https://img.shields.io/github/stars/whoamikiddie/Ech0Vulnx?style=for-the-badge" alt="Stars"></a>
-  <a href="https://github.com/whoamikiddie/Ech0Vulnx/network/members"><img src="https://img.shields.io/github/forks/whoamikiddie/Ech0Vulnx?style=for-the-badge" alt="Forks"></a>
-  <a href="https://github.com/whoamikiddie/Ech0Vulnx/issues"><img src="https://img.shields.io/github/issues/whoamikiddie/Ech0Vulnx?style=for-the-badge" alt="Issues"></a>
-  <a href="https://github.com/whoamikiddie/Ech0Vulnx/blob/main/LICENSE"><img src="https://img.shields.io/github/license/whoamikiddie/Ech0Vulnx?style=for-the-badge" alt="License"></a>
+  <a href="https://github.com/ALL-FOR-ONE-TECH/Ech0Vulnx/stargazers"><img src="https://img.shields.io/github/stars/ALL-FOR-ONE-TECH/Ech0Vulnx?style=for-the-badge" alt="Stars"></a>
+  <a href="https://github.com/ALL-FOR-ONE-TECH/Ech0Vulnx/network/members"><img src="https://img.shields.io/github/forks/ALL-FOR-ONE-TECH/Ech0Vulnx?style=for-the-badge" alt="Forks"></a>
+  <a href="https://github.com/ALL-FOR-ONE-TECH/Ech0Vulnx/issues"><img src="https://img.shields.io/github/issues/ALL-FOR-ONE-TECH/Ech0Vulnx?style=for-the-badge" alt="Issues"></a>
+  <a href="https://github.com/ALL-FOR-ONE-TECH/Ech0Vulnx/blob/main/LICENSE"><img src="https://img.shields.io/github/license/ALL-FOR-ONE-TECH/Ech0Vulnx?style=for-the-badge" alt="License"></a>
 </div>
 
 <div align="center">
@@ -91,7 +91,7 @@ brew install python3 git nmap
 ### **Step 2: Clone Repository**
 
 ```bash
-git clone https://github.com/whoamikiddie/Ech0Vulnx.git
+git clone https://github.com/ALL-FOR-ONE-TECH/Ech0Vulnx.git
 cd Ech0Vulnx
 ```
 
@@ -111,7 +111,7 @@ python3 Ech0Vulnx.py -h
 ## 📖 Usage
 
 <div align="center">
-  <img src="https://raw.githubusercontent.com/whoamikiddie/Ech0Vulnx/main/assets/usage.png" alt="Usage Example"/>
+  <img src="https://raw.githubusercontent.com/ALL-FOR-ONE-TECH/Ech0Vulnx/main/assets/usage.png" alt="Usage Example"/>
 </div>
 
 ```bash
@@ -395,6 +395,6 @@ Contributions are welcome! Please feel free to submit a Pull Request.
 If you find this tool useful, please consider giving it a ⭐ on GitHub!
 
 <div align="center">
-  <img src="https://raw.githubusercontent.com/whoamikiddie/Ech0Vulnx/main/assets/ech0vulnx-footer.png" alt="Ech0Vulnx Footer" width="600"/>
+  <img src="https://raw.githubusercontent.com/ALL-FOR-ONE-TECH/Ech0Vulnx/main/assets/ech0vulnx-footer.png" alt="Ech0Vulnx Footer" width="600"/>
 </div>
 
